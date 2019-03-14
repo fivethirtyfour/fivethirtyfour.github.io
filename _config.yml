@@ -1,0 +1,22 @@
+# Jekyll main configuration file
+# See https://jekyllrb.com/docs/configuration/ to further customize this file
+# Defaults settings https://jekyllrb.com/docs/configuration/#default-configuration
+
+title: fivethirtyfour - IT Services
+description: "IT services for all."
+
+url: # (optional) https://example.com, defaults to http://localhost:4000 in development
+
+permalink: date # how your URLs are built, see https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
+
+# Build settings
+sass:
+  style: :nested
+markdown: kramdown
+permalink: pretty
+plugins:
+  - jekyll-paginate # Manually add to Gemfile in Jekyll Plugins
+  - jekyll-feed
+exclude:
+  - Gemfile
+  - Gemfile.lock
