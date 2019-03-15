@@ -218,6 +218,11 @@ nav {
       width: 50%; }
       .hero-wrapper .hero-image img {
         padding: 0; } }
+@media screen and (min-width: 1200px) {
+  .hero-wrapper {
+    justify-content: space-between; }
+    .hero-wrapper .hero-content {
+      max-width: 320px; } }
 .cta-form {
   display: flex;
   flex-direction: column; }
@@ -236,12 +241,3 @@ nav {
     color: #630316;
     border-color: #dd901d;
     margin-top: 1rem; }
-
-@media screen and (min-width: 800px) {
-  .cta-form {
-    flex-direction: row; }
-    .cta-form input[type="email"] {
-      border-radius: 3px 0 0 3px; }
-    .cta-form input[type="submit"] {
-      border-radius: 0 3px 3px 0;
-      margin: 0; } }

@@ -22,6 +22,12 @@
       img
         padding: 0
 
+@media screen and (min-width: $large-breakpoint)
+  .hero-wrapper
+    justify-content: space-between
+    .hero-content
+      max-width: 320px
+
 .cta-form
   display: flex
   flex-direction: column
@@ -40,12 +46,3 @@
     color: $red-900
     border-color: $yellow-600
     margin-top: 1rem
-
-@media screen and (min-width: $medium-breakpoint)
-  .cta-form
-    flex-direction: row
-    input[type="email"]
-      border-radius: 3px 0 0 3px
-    input[type="submit"]
-      border-radius: 0 3px 3px 0
-      margin: 0
