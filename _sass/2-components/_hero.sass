@@ -1,0 +1,51 @@
+// Hero styling
+.hero-wrapper
+  padding: 1rem 0
+  .hero-content
+    width: 80%
+    margin: auto
+    text-align: center
+  .hero-image
+    width: 80%
+    padding-top: 1rem
+    margin: auto
+
+@media screen and (min-width: $small-breakpoint)    
+  .hero-wrapper
+    padding: 3rem 0
+    align-items: center
+    .hero-content
+      width: 50%
+      text-align: left
+    .hero-image
+      width: 50%
+      img
+        padding: 0
+
+.cta-form
+  display: flex
+  flex-direction: column
+  input
+    font-size: 1.15rem
+    line-height: 1.15
+    padding: 0.5rem .75rem
+    border: 1px solid $grey-200
+    border-radius: $border-radius
+  input[type="email"]
+    border-color: $indigo-200
+    color: $indigo-900
+  input[type="submit"]
+    width: max-content
+    background: $yellow-400
+    color: $red-900
+    border-color: $yellow-600
+    margin-top: 1rem
+
+@media screen and (min-width: $medium-breakpoint)
+  .cta-form
+    flex-direction: row
+    input[type="email"]
+      border-radius: 3px 0 0 3px
+    input[type="submit"]
+      border-radius: 0 3px 3px 0
+      margin: 0

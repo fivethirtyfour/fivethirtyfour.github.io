@@ -1,0 +1,26 @@
+// Global element styling
+
+// Containers & Wrappers
+.container
+  padding: 0 1rem
+
+@media screen and (min-width: $small-breakpoint)
+  .container
+    padding: 0 5%
+    margin: auto
+
+@media screen and (min-width: $medium-breakpoint)
+  .container
+    padding: 0 10%
+
+@media screen and (min-width: $xlarge-breakpoint)
+  .container
+    padding: 0 25%
+
+.wrapper
+  display: flex
+  flex-direction: column
+
+@media screen and (min-width: $small-breakpoint)
+  .wrapper
+    flex-direction: row
