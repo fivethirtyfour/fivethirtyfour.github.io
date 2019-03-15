@@ -174,7 +174,7 @@ p {
     padding: 0 10%; } }
 @media screen and (min-width: 1600px) {
   .container {
-    padding: 0 25%; } }
+    padding: 0 20%; } }
 .wrapper {
   display: flex;
   flex-direction: column; }
