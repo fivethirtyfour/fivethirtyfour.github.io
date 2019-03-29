@@ -222,7 +222,11 @@ nav {
   .hero-wrapper {
     justify-content: space-between; }
     .hero-wrapper .hero-content {
-      max-width: 320px; } }
+      max-width: 320px;
+      margin: 0; }
+    .hero-wrapper .hero-image {
+      max-width: 80%;
+      margin: 0; } }
 .cta-form {
   display: flex;
   flex-direction: column; }
@@ -241,3 +245,26 @@ nav {
     color: #630316;
     border-color: #dd901d;
     margin-top: 1rem; }
+
+.card-grid {
+  display: grid;
+  grid-gap: 3rem; }
+
+.card h3 {
+  position: relative; }
+.card h3::after {
+  display: flex;
+  position: absolute;
+  bottom: -0.5rem;
+  content: "";
+  width: 4rem;
+  height: 4px;
+  border-radius: 3px;
+  background: #061279; }
+
+@media screen and (min-width: 500px) {
+  .card-grid {
+    grid-template-columns: 1fr 1fr; } }
+@media screen and (min-width: 1200px) {
+  .card-grid {
+    grid-template-columns: 1fr 1fr 1fr; } }

@@ -1,0 +1,26 @@
+// Card Styling
+
+.card-grid
+  display: grid
+  grid-gap: 3rem
+
+.card
+  h3
+    position: relative
+  h3::after
+    display: flex
+    position: absolute
+    bottom: -0.5rem
+    content: ''
+    width: 4rem
+    height: 4px
+    border-radius: $border-radius
+    background: $indigo-900
+
+@media screen and (min-width: $small-breakpoint)
+  .card-grid
+    grid-template-columns: 1fr 1fr
+
+@media screen and (min-width: $large-breakpoint)
+  .card-grid
+    grid-template-columns: 1fr 1fr 1fr
