@@ -182,6 +182,12 @@ p {
 @media screen and (min-width: 500px) {
   .wrapper {
     flex-direction: row; } }
+section {
+  padding: 1rem 0; }
+
+.alt-background {
+  background: #88b0fc; }
+
 .top-bar {
   height: 4px;
   width: 100%;
@@ -190,11 +196,21 @@ p {
 nav {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 60px; }
 
 .brand {
   margin: 0;
   font-weight: 100; }
+
+.navigation-links-wrapper {
+  display: flex;
+  list-style: none; }
+  .navigation-links-wrapper li {
+    margin-left: 1rem; }
+
+.navigation-link {
+  text-decoration: none; }
 
 .hero-wrapper {
   padding: 1rem 0; }
