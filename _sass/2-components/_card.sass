@@ -3,24 +3,33 @@
 .card-grid
   display: grid
   grid-gap: 3rem
+  list-style: none
+  padding: 0
 
 .card
-  h3
-    position: relative
-  h3::after
+  ul
+    list-style: none
+    padding: 0
+  li
     display: flex
-    position: absolute
-    bottom: -0.5rem
-    content: ''
-    width: 4rem
-    height: 4px
-    border-radius: $border-radius
-    background: $indigo-900
+    margin-bottom: 1rem
+  svg
+    width: 1.5rem
+    height: 1.5rem
+    flex-shrink: 0
+    margin-top: .25rem
+    margin-right: 1rem
+    .primary
+      stroke: $indigo-400
+      fill: none
+    .secondary
+      fill: $indigo-400
+
 
 @media screen and (min-width: $small-breakpoint)
   .card-grid
     grid-template-columns: 1fr 1fr
 
-@media screen and (min-width: $large-breakpoint)
-  .card-grid
-    grid-template-columns: 1fr 1fr 1fr
+// @media screen and (min-width: $large-breakpoint)
+//   .card-grid
+//     grid-template-columns: 1fr 1fr 1fr
