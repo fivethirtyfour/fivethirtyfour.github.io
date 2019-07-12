@@ -1,8 +1,21 @@
 // Global element styling
 
 // Containers & Wrappers
+.gradient-wrapper
+  background: linear-gradient(hsla(216, 33%, 97%, 1), hsla(216, 33%, 100%, 1))
+
 .container
   padding: 0 1rem
+  position: relative
+
+.content-container
+  max-width: 48rem
+  margin: auto
+
+.section-header-wrapper
+  margin-bottom: 2rem
+  p
+    font-size: 1.25rem
 
 @media screen and (min-width: $small-breakpoint)
   .container
@@ -25,15 +38,77 @@
   .wrapper
     flex-direction: row
 
+  .section-header-wrapper
+    max-width: 520px
+    margin: 2rem auto 4rem auto
+    text-align: center
+
 section
   padding: 1rem 0
 
-.alt-background
-  background: $indigo-200
-
 // Image and SVG
+.svg-circles
+  width: 80%
+  max-width: 1080px
+  height: auto
+  position: absolute
+  top: 0
+  right: 0
+
 svg.primary
-  background: $indigo-400
+  background: $purple-400
 
 svg.secondary
-  color: $indigo-000
+  color: $purple-050
+
+// Buttons & Forms
+.button
+  width: max-content
+  background: $cool-grey-400
+  color: $cool-grey-900
+  border: none
+  box-shadow: $button-shadow
+  margin-top: 1rem
+
+.button-primary
+  background: $purple-800
+  color: $purple-050
+  box-shadow: $button-shadow-primary
+
+.button-secondary
+  background: $yellow-500
+  color: $yellow-900
+  box-shadow: $button-shadow-secondary
+
+
+form
+  display: flex
+  flex-direction: column
+    
+input
+  font-size: 1.15rem
+  line-height: 1.15
+  padding: 0.5rem .75rem
+  border-radius: $border-radius
+
+input[type="email"]
+  border: 1px solid $cool-grey-200
+  border-color: $purple-200
+  color: $purple-900
+
+
+.cta-form
+  display: flex
+  flex-direction: column
+  .button
+    margin-top: 1rem
+    margin-left: 0
+
+@media screen and (min-width: $small-breakpoint)
+  .button
+    margin-top: 0
+    margin-left: 2rem
+
+  form
+    flex-direction: row
+    justify-content: center

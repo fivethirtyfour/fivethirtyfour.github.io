@@ -11,127 +11,76 @@ html {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  color: #212121; }
+  color: #1f2933; }
 
-/**
- * Correct `block` display not defined for any HTML5 element in IE 8/9.
- * Correct `block` display not defined for `details` in IE 10/11
- * and Firefox.
- * Correct `block` display not defined for `main` in IE 11.
- */
- * article,
- * aside,
- * cite,
- * details,
- * figcaption,
- * figure,
- * footer,
- * header,
- * hgroup,
- * main,
- * menu,
- * nav,
- * section 
- *   display: block
- *
- *
- * /*
- *  * Add the correct display in all browsers.
- *  */
- * summary 
- *   display: list-item
- *
- *
- * /**
- *  * Correct `inline-block` display not defined in IE 8/9.
- *  */
- * audio,
- * canvas,
- * progress,
- * video 
- *   display: inline-block
- *
- *
- * /**
- *  * Normalize vertical alignment of `progress` in Chrome, Firefox, and Opera.
- *  */
- * progress 
- *   vertical-align: baseline
- *
- *
- * /**
- *  * Prevent modern browsers from displaying `audio` without controls.
- *  * Remove excess height in iOS 5 devices.
- *  */
- * audio:not([controls]) 
- *   display: none
- *   height: 0
- *
- *
- * /**
- *  * Prevent img and video elements from spilling outside of the page on smaller screens.
- *  */
- * img,
- * video 
- *   max-width: 100%
- *   height: auto
- *
- *
- * video 
- *   box-shadow: $box-shadow
- *   border-radius: $border-radius
- *
- *
- * /**
- *  * Prevent iframe, object, and embed elements from spilling outside of the page on smaller screens.
- *  * height: auto causes iframes to smush, so it's omitted here.
- *  */
- * iframe,
- * object,
- * embed 
- *   max-width: 100%
- *
- *
- * /**
- *  * 1. Remove border when inside `a` element in IE 8/9/10.
- *  * 2. Prevents IE from making scaled images look like crap
- *  */
- * img 
- *   border-style: none
- *   -ms-interpolation-mode: bicubic
- *
- *
- * img.image-small 
- *   height: 120px
- *   width: 120px
- *   border-radius: 100%
- *
- *
- * img.image-medium 
- *   height: 120px
- *   width: 120px
- *   border-radius: 100%
- *
- * /**
- *  * Correct overflow not hidden in IE 9/10/11.
- *  */
- * svg:not(:root) 
- *   overflow: hidden
- *
- *
- * /**
- *  * Address inconsistent margin.
- *  */
- * figure 
- *   margin: 0
- *
- *
- * /**
- *  * @workaround Remove focus from <main> element when using tabindex="-1" hack for skipnav link
- *  * @link https://code.google.com/p/chromium/issues/detail?id=37721
- *  */
- * [tabindex="-1"]:focus 
- *     outline: none */
+article,
+aside,
+cite,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section {
+  display: block; }
+
+summary {
+  display: list-item; }
+
+audio,
+canvas,
+progress,
+video {
+  display: inline-block; }
+
+progress {
+  vertical-align: baseline; }
+
+audio:not([controls]) {
+  display: none;
+  height: 0; }
+
+img,
+video {
+  max-width: 100%;
+  height: auto; }
+
+video {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.16);
+  border-radius: 3px; }
+
+iframe,
+object,
+embed {
+  max-width: 100%; }
+
+img {
+  border-style: none;
+  -ms-interpolation-mode: bicubic; }
+
+img.image-small {
+  height: 120px;
+  width: 120px;
+  border-radius: 100%; }
+
+img.image-medium {
+  height: 120px;
+  width: 120px;
+  border-radius: 100%; }
+
+svg:not(:root) {
+  overflow: hidden; }
+
+figure {
+  margin: 0; }
+
+[tabindex="-1"]:focus {
+  outline: none; }
+
 h1 {
   font-size: 2.25rem; }
 
@@ -156,14 +105,24 @@ p {
 .bold {
   font-weight: 700; }
 
-.success {
-  color: #189a1c; }
+.center {
+  text-align: center; }
 
-.warning {
-  color: #ef4e4e; }
+.gradient-wrapper {
+  background: linear-gradient(#f5f7fa, white); }
 
 .container {
-  padding: 0 1rem; }
+  padding: 0 1rem;
+  position: relative; }
+
+.content-container {
+  max-width: 48rem;
+  margin: auto; }
+
+.section-header-wrapper {
+  margin-bottom: 2rem; }
+  .section-header-wrapper p {
+    font-size: 1.25rem; }
 
 @media screen and (min-width: 500px) {
   .container {
@@ -181,32 +140,89 @@ p {
 
 @media screen and (min-width: 500px) {
   .wrapper {
-    flex-direction: row; } }
+    flex-direction: row; }
+
+  .section-header-wrapper {
+    max-width: 520px;
+    margin: 2rem auto 4rem auto;
+    text-align: center; } }
 section {
   padding: 1rem 0; }
 
-.alt-background {
-  background: #88b0fc; }
+.svg-circles {
+  width: 80%;
+  max-width: 1080px;
+  height: auto;
+  position: absolute;
+  top: 0;
+  right: 0; }
 
 svg.primary {
-  background: #3964db; }
+  background: #744cb8; }
 
 svg.secondary {
-  color: #dbeaff; }
+  color: #eae2f8; }
 
-.top-bar {
-  height: 4px;
-  width: 100%;
-  background: #3964db; }
+.button {
+  width: max-content;
+  background: #7b8793;
+  color: #1f2933;
+  border: none;
+  box-shadow: inset 0 2px 0 #cad1d8, 0 4px 4px rgba(0, 0, 0, 0.2);
+  margin-top: 1rem; }
 
+.button-primary {
+  background: #34126e;
+  color: #eae2f8;
+  box-shadow: inset 0 2px 0 #a081d9, 0 4px 4px rgba(0, 0, 0, 0.2); }
+
+.button-secondary {
+  background: #e9b949;
+  color: #513c06;
+  box-shadow: inset 0 2px 0 #f8e3a5, 0 4px 4px rgba(0, 0, 0, 0.2); }
+
+form {
+  display: flex;
+  flex-direction: column; }
+
+input {
+  font-size: 1.15rem;
+  line-height: 1.15;
+  padding: 0.5rem 0.75rem;
+  border-radius: 3px; }
+
+input[type="email"] {
+  border: 1px solid #cad1d8;
+  border-color: #a081d9;
+  color: #250755; }
+
+.cta-form {
+  display: flex;
+  flex-direction: column; }
+  .cta-form .button {
+    margin-top: 1rem;
+    margin-left: 0; }
+
+@media screen and (min-width: 500px) {
+  .button {
+    margin-top: 0;
+    margin-left: 2rem; }
+
+  form {
+    flex-direction: row;
+    justify-content: center; } }
 nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   height: 60px; }
 
+.brand-wrapper {
+  display: flex;
+  align-items: center; }
+
 .brand {
-  margin: 0;
+  margin: 0 0 0 1rem;
   font-weight: 100; }
 
 .navigation-links-wrapper {
@@ -216,13 +232,16 @@ nav {
     margin-left: 1rem; }
 
 .navigation-link {
-  text-decoration: none; }
+  text-decoration: none;
+  font-size: 1.235rem;
+  color: #1f2933; }
+  .navigation-link:hover {
+    border-bottom: 4px solid #f7d06e; }
 
 .hero-wrapper {
   padding: 1rem 0; }
   .hero-wrapper .hero-content {
     width: 80%;
-    margin: auto;
     text-align: center; }
   .hero-wrapper .hero-image {
     width: 80%;
@@ -249,49 +268,108 @@ nav {
     .hero-wrapper .hero-image {
       max-width: 80%;
       margin: 0; } }
-.cta-form {
-  display: flex;
-  flex-direction: column; }
-  .cta-form input {
-    font-size: 1.15rem;
-    line-height: 1.15;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #cfcfcf;
-    border-radius: 3px; }
-  .cta-form input[type="email"] {
-    border-color: #88b0fc;
-    color: #061279; }
-  .cta-form input[type="submit"] {
-    width: max-content;
-    background: #f7c94a;
-    color: #630316;
-    border-color: #dd901d;
-    margin-top: 1rem; }
-
 .card-grid {
   display: grid;
-  grid-gap: 3rem;
+  justify-content: center;
+  grid-gap: 4rem 7.5rem;
   list-style: none;
   padding: 0; }
 
-.card ul {
-  list-style: none;
-  padding: 0; }
-.card li {
+.card {
   display: flex;
-  margin-bottom: 1rem; }
-.card svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-  margin-top: 0.25rem;
-  margin-right: 1rem; }
-  .card svg .primary {
-    stroke: #3964db;
-    fill: none; }
-  .card svg .secondary {
-    fill: #3964db; }
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.16);
+  padding: 2rem;
+  border-radius: 3px;
+  width: 360px;
+  min-height: 400px;
+  text-align: center;
+  background: white;
+  z-index: 100; }
+  .card p {
+    font-size: 1.125rem; }
 
-@media screen and (min-width: 500px) {
+@media screen and (min-width: 800px) {
   .card-grid {
-    grid-template-columns: 1fr 1fr; } }
+    grid-template-columns: 360px 360px;
+    grid-row-gap: 0; }
+
+  .card:nth-child(odd) {
+    margin-bottom: 6rem; }
+
+  .card:nth-child(even) {
+    margin-top: 6rem; } }
+.icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  border-radius: 100%;
+  border: 10px solid #e5e8eb;
+  box-shadow: 0px 4px 15px rgba(229, 232, 235, 0.5);
+  width: 80px;
+  height: 80px; }
+
+.svg-icon {
+  height: 36px;
+  width: 36px;
+  stroke: #cad1d8; }
+
+.icon-purple {
+  border-color: #a081d9;
+  box-shadow: 0px 4px 15px rgba(160, 129, 217, 0.75); }
+
+.svg-purple {
+  stroke: #411986; }
+
+.icon-yellow {
+  border-color: #f8e3a5;
+  box-shadow: 0px 4px 15px rgba(248, 227, 165, 0.75); }
+
+.svg-yellow {
+  stroke: #c8992d; }
+
+#philosophy {
+  padding-top: 20rem;
+  margin-top: -20rem;
+  padding-bottom: 5rem; }
+  #philosophy p {
+    font-size: 1.25rem; }
+
+#philosophy:before,
+#philosophy:after {
+  display: block;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%; }
+
+#philosophy:before {
+  background-image: url("/assets/images/topograph.svg");
+  background-size: contain;
+  z-index: -100;
+  opacity: 0.6; }
+
+#philosophy:after {
+  background: linear-gradient(#f5f7fa, white);
+  z-index: -150; }
+
+#contact {
+  padding: 2rem 10% 4rem 10%;
+  background: #e9b949; }
+  #contact .section-header-wrapper {
+    color: #34126e;
+    max-width: 420px; }
+
+footer {
+  height: 120px;
+  background: #34126e;
+  color: white;
+  display: flex;
+  align-items: center; }

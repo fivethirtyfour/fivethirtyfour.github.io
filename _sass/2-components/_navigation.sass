@@ -1,16 +1,15 @@
-.top-bar
-  height: 4px
-  width: 100%
-  background: $indigo-400
-
 nav
   display: flex
+  flex-wrap: wrap
   align-items: center
-  justify-content: space-between
   height: 60px
 
+.brand-wrapper
+  display: flex
+  align-items: center
+
 .brand
-  margin: 0
+  margin: 0 0 0 1rem
   font-weight: 100
 
 .navigation-links-wrapper
@@ -21,3 +20,7 @@ nav
 
 .navigation-link
   text-decoration: none
+  font-size: 1.235rem
+  color: $cool-grey-900
+  &:hover
+    border-bottom: 4px solid $yellow-400

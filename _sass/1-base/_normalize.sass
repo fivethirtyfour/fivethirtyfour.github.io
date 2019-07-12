@@ -12,146 +12,81 @@ html
   margin: 0
   padding: 0
   font-family: $font-family
-  color: $grey-900
+  color: $cool-grey-900
+
+article,
+aside,
+cite,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section 
+  display: block
 
 
-/**
- * Correct `block` display not defined for any HTML5 element in IE 8/9.
- * Correct `block` display not defined for `details` in IE 10/11
- * and Firefox.
- * Correct `block` display not defined for `main` in IE 11.
- */
- article,
- aside,
- cite,
- details,
- figcaption,
- figure,
- footer,
- header,
- hgroup,
- main,
- menu,
- nav,
- section 
-   display: block
- 
- 
- /*
-  * Add the correct display in all browsers.
-  */
- summary 
-   display: list-item
- 
- 
- /**
-  * Correct `inline-block` display not defined in IE 8/9.
-  */
- audio,
- canvas,
- progress,
- video 
-   display: inline-block
- 
- 
- /**
-  * Normalize vertical alignment of `progress` in Chrome, Firefox, and Opera.
-  */
- progress 
-   vertical-align: baseline
- 
- 
- /**
-  * Prevent modern browsers from displaying `audio` without controls.
-  * Remove excess height in iOS 5 devices.
-  */
- audio:not([controls]) 
-   display: none
-   height: 0
- 
- 
- /**
-  * Prevent img and video elements from spilling outside of the page on smaller screens.
-  */
- img,
- video 
-   max-width: 100%
-   height: auto
- 
+summary 
+  display: list-item
 
- video 
-   box-shadow: $box-shadow
-   border-radius: $border-radius
- 
- 
- /**
-  * Prevent iframe, object, and embed elements from spilling outside of the page on smaller screens.
-  * height: auto causes iframes to smush, so it's omitted here.
-  */
- iframe,
- object,
- embed 
-   max-width: 100%
- 
+audio,
+canvas,
+progress,
+video 
+  display: inline-block
 
- /**
-  * 1. Remove border when inside `a` element in IE 8/9/10.
-  * 2. Prevents IE from making scaled images look like crap
-  */
- img 
-   border-style: none
-   -ms-interpolation-mode: bicubic
- 
-
- img.image-small 
-   height: 120px
-   width: 120px
-   border-radius: 100%
- 
-
- img.image-medium 
-   height: 120px
-   width: 120px
-   border-radius: 100%
-
- /**
-  * Correct overflow not hidden in IE 9/10/11.
-  */
- svg:not(:root) 
-   overflow: hidden
- 
- 
- /**
-  * Address inconsistent margin.
-  */
- figure 
-   margin: 0
- 
- 
- /**
-  * @workaround Remove focus from <main> element when using tabindex="-1" hack for skipnav link
-  * @link https://code.google.com/p/chromium/issues/detail?id=37721
-  */
- [tabindex="-1"]:focus 
-     outline: none
- 
-
-//  Form Elements
-// input,
-// select 
-//   border-radius: $border-radius
-//   border: 1px solid $blue-300
-//   padding: .25rem .5rem
+progress 
+  vertical-align: baseline
 
 
-// input:focus 
-//   border-width: 2px
+audio:not([controls]) 
+  display: none
+  height: 0
 
 
-// input[type="checkbox"] 
-//   height: 1.25rem
-//   width: 1.25rem
+img,
+video 
+  max-width: 100%
+  height: auto
 
 
-// input[type=date] 
-//   font-family: $font-family
+video 
+  box-shadow: $box-shadow
+  border-radius: $border-radius
+
+
+iframe,
+object,
+embed 
+  max-width: 100%
+
+
+img 
+  border-style: none
+  -ms-interpolation-mode: bicubic
+
+
+img.image-small 
+  height: 120px
+  width: 120px
+  border-radius: 100%
+
+
+img.image-medium 
+  height: 120px
+  width: 120px
+  border-radius: 100%
+
+svg:not(:root) 
+  overflow: hidden
+
+
+figure 
+  margin: 0
+ 
+[tabindex="-1"]:focus 
+  outline: none
