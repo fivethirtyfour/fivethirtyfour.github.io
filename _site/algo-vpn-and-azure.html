@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <title>fivethirtyfour - IT Services</title>
+  <meta http-equiv="Content-Type" content="text/html"; charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="/assets/icons/favicon/favicon-32.png">
+  <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+</head>
+  <body>
+      <nav class="container">
+  <div class="brand-wrapper">
+    <svg width="36" height="32" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="8" rx="1" fill="#421987"/>
+      <rect x="36" y="32" width="24" height="8" rx="1" transform="rotate(-180 36 32)" fill="#421987"/>
+      <rect y="12" width="16" height="8" rx="1" fill="#E9B949"/>
+      <rect x="36" y="20" width="16" height="8" rx="1" transform="rotate(-180 36 20)" fill="#E9B949"/>
+      <rect y="24" width="8" height="8" rx="1" fill="#421987"/>
+      <rect x="36" y="8" width="8" height="8" rx="1" transform="rotate(-180 36 8)" fill="#421987"/>
+    </svg>
+    <h2 class="brand">five<b>thirty</b>four</h2>
+  </div>
+  <div>
+    <ul class="navigation-links-wrapper">
+      <li>
+        <a href="/articles" class="navigation-link">Articles</a>
+      </li>
+      <li>
+        <a href="#services" class="navigation-link">Services</a>
+      </li>
+      <li>
+        <a href="#contact" class="navigation-link">Contact</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+      <!-- <svg class="svg-wave" viewBox="0 0 1424 207" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 119.326C114.5 95.9928 391.9 53.6261 593.5 70.8261C845.5 92.3261 895 135.826 1105 145.826C1273 153.826 1397 131.493 1438 119.326" stroke="#E9B949" stroke-width="3"/>
+  <path d="M1 119.326C114.5 95.993 286.9 -13.3738 488.5 3.82617C740.5 25.3262 892 194.326 1102 204.326C1270 212.326 1397 131.493 1438 119.326" stroke="#E9B949" stroke-width="3"/>
+  <path d="M1 119.326C114.5 95.9928 317.4 23.6263 519 40.8263C771 62.3263 900 159.326 1110 169.326C1278 177.326 1397 131.493 1438 119.326" stroke="#34126F" stroke-width="3"/>
+</svg> -->
+      <div id="post" class="container">
+  <div class="post-wrapper">
+    <h1 class="post-title">Self-hosted VPN with Algo and Azure</h1>
+    <h1 id="what-is-algo">What is Algo?</h1>
+
+<p><a href="https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/">Algo VPN</a> is an open source self-hosted VPN service. There’s tons of VPN services available but if you want to control what data is collected, used, and/or sold then rolling your own VPN service couldn’t be much easier.</p>
+
+<p>Algo VPN is an on-demand VPN service in the cloud (or on a local machine that is open to the internet) that uses modern protocols and ciphers, and minimal software. Since the VPN is self-hosted the ability to teardown and rebuild couldn’t be much easier.</p>
+
+<p>There’s little configuration and pretty close to “one-click” installs via the Ansible packager.</p>
+
+<h1 id="what-youll-need">What you’ll need</h1>
+
+<p>Listed below are what we will need for the required installation and configuration.</p>
+
+<ul>
+  <li>An account on Azure*</li>
+  <li>An installation of Ansible</li>
+  <li>Access to a debian-base operating system (WSL, Ubuntu, Debian, VM w/Debian, etc)</li>
+  <li>Support for macOS is also available</li>
+</ul>
+
+<p><strong>Some assumptions</strong></p>
+
+<ul>
+  <li>Windows Subsystem for Linux installed - since I will be doing this from a Windows machine I will be using WSL for this demonstration.</li>
+  <li>
+    <p>Access to a bash shell</p>
+  </li>
+  <li><em>This is what we will be using for this demonstration however this is pretty universal for installation on all the other major cloud providers</em></li>
+</ul>
+
+<h1 id="getting-started">Getting started</h1>
+
+<h2 id="pre-requisites">Pre-requisites</h2>
+
+<h3 id="azure-cli">Azure-cli</h3>
+
+<p>We will need to install the <strong>Azure CLI</strong> in order for us to get shell access to our Azure environment. This will help automate a lot of the process and we won’t have to make special API keys since we’ll already be authenticated to the Azure environment.</p>
+
+<p>Install the Azure-cli pre-requisites</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    curl <span class="nt">-sL</span> https://aka.ms/InstallAzureCLIDeb | <span class="nb">sudo </span>bash
+</code></pre></div></div>
+
+<h3 id="ansible">Ansible</h3>
+
+<p>Add Ansible repository</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">sudo </span>apt-add-repository <span class="nt">-y</span> ppa:ansible/ansible
+</code></pre></div></div>
+
+<p>Update repositories</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">sudo </span>apt update <span class="nt">-y</span>
+    <span class="nb">sudo </span>apt upgrade <span class="nt">-y</span>
+</code></pre></div></div>
+
+<h3 id="python-tools">Python tools</h3>
+
+<p>Install Python tools</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">sudo </span>apt <span class="nb">install</span> <span class="nt">-y</span> build-essential libssl-dev libffi-dev python-dev python-pip python-setuptools python-virtualenv
+</code></pre></div></div>
+
+<h2 id="algo-vpn-server-installation">Algo VPN server installation</h2>
+
+<p>Clone the repository</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    git clone https://github.com/trailsofbits/algo
+    <span class="nb">cd </span>algo
+</code></pre></div></div>
+
+<p>Install the remaining environment and requirements</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    python <span class="nt">-m</span> virtualenv <span class="nb">env
+    source env</span>/bin/activate
+    python <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">-U</span> pip
+    python <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+</code></pre></div></div>
+
+<p>Configure the users that will be using the VPN service. In order to do this you will need to edit <code class="highlighter-rouge">[config.cfg](http://config.cf)</code> file that is located in the root of the <em>algo</em> directory. Use your favorite editor of choice to do this. <em>Substitute my users for whatever your users you want.</em></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    Users:
+      -  itsame
+      -  bestfriend
+      -  themisses
+</code></pre></div></div>
+
+<p><strong>Not required:</strong> <em>At this point if you want to change the default VM that Algo uses to create the image you can. You will need to change the pre-defined size.</em></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    cloud_providers:
+      azure:
+        size: Standard_B1S <span class="c"># This can be changed to something else if need be but this is pretty cheap already and enough for 200+ simultaneous connections</span>
+        image: 19.04
+</code></pre></div></div>
+
+<p>Save the file and exit out of the editor</p>
+
+<p><strong>For Azure environments only:</strong></p>
+
+<p>Log into your Azure environment via the Azure-cli that we installed earlier. Run the command and a window will pop open for you to authenticate to your environment.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    az login
+</code></pre></div></div>
+
+<p>Execute the command to start the Algo installation. I ran into some issues when running it without <code class="highlighter-rouge">sudo</code> so that’s why we’re doing this here.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">sudo</span> ./algo
+</code></pre></div></div>
+
+<p>You will be prompted to select the cloud provider you would like to install Algo on.</p>
+
+<p><img src="/assets/images/post-images/algo-vpn-azure/cloud-provider.png" alt="Algo Cloud Provider" /></p>
+
+<p>Since we’re installing with Azure we will select <code class="highlighter-rouge">5</code></p>
+
+<p>Most of the defaults will be more than sufficient for you but just go through them and select what’s more pertinent to you and your situation.</p>
+
+<p>Select the region you would like to install your VPN server.</p>
+
+<p><img src="/assets/images/post-images/algo-vpn-azure/region.png" alt="Algo Region Selection" /></p>
+
+<p>From here the installer will run on its own without much interaction.</p>
+
+<p><strong>There is one caveat though, when it prompts for you to accept the fingerprint, if you don’t do in time it will time out and the installation <em>WILL</em> fail.</strong></p>
+
+<p><img src="/assets/images/post-images/algo-vpn-azure/ssh.jpg" alt="Algo SSH Prompt" /></p>
+
+<p>At this point if everything went well the installation should have completed successfully.</p>
+
+<p><img src="/assets/images/post-images/algo-vpn-azure/completed.png" alt="Algo Completed Message" /></p>
+
+<h2 id="connecting-via-a-client">Connecting via a client</h2>
+
+<p>To configure the VPN clients Algo generates WireGuard configuration files for all the users that you specified in your <code class="highlighter-rouge">config.cfg</code> file. Those will be located at the following directories:</p>
+
+<p><em>For WireGuard configuration files used for “importing tunnel(s) from file”</em></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/algo/config/&lt;ip of where the server was installed&gt;/wireguard/&lt;username&gt;.conf
+</code></pre></div></div>
+
+<p><em>For WireGuard QR code used for authentication on mobile devices</em></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/algo/config/&lt;ip of where the server was installed&gt;/wireguard/&lt;username&gt;.png
+</code></pre></div></div>
+
+<p>To install the WireGuard software you will need to install the specific software for your device. To find the installation files for your device you can head over to <a href="https://www.wireguard.com/install/">https://www.wireguard.com/install/</a>.</p>
+
+<p>After installing the software on your given device import the tunnel configuration and <code class="highlighter-rouge">Activate</code> the tunnel in WireGuard.</p>
+
+<h2 id="youre-all-done">You’re all done!</h2>
+
+  </div>
+</div>
+      <section id="contact" class="container">
+  <div class="section-header-wrapper">
+    <h1>Contact us today</h1>
+    <p>Find out how we can be your solution for your technology needs.</p>
+  </div>
+    <form method="post" action="/">
+      <input name="Email" type="email" placeholder="Enter in your email">
+      <input type="hidden" name="_to" value="colinrubbert@gmail.com">
+      <input type="text" name="_subject" style="display: none;" value="fivethirtyfour - notification">
+      <input type="text" name="_gotcha" style="display: none;">
+      <input class="button button-primary" type="submit" value="Notify Me">
+    </form>
+
+</section>
+      <footer class="container">
+  <div class="brand-wrapper">
+    <svg class="brand-inverted"width="36" height="32" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="8" rx="1" fill="#FCEFC7"/>
+      <rect x="36" y="32" width="24" height="8" rx="1" transform="rotate(-180 36 32)" fill="#FCEFC7"/>
+      <rect y="12" width="16" height="8" rx="1" fill="#CFBCF2"/>
+      <rect x="36" y="20" width="16" height="8" rx="1" transform="rotate(-180 36 20)" fill="#CFBCF2"/>
+      <rect y="24" width="8" height="8" rx="1" fill="#FCEFC7"/>
+      <rect x="36" y="8" width="8" height="8" rx="1" transform="rotate(-180 36 8)" fill="#FCEFC7"/>
+    </svg>
+    <h2 class="brand">five<b>thirty</b>four</h2>
+  </div>
+</footer>
+  </body>

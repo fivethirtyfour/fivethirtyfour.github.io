@@ -1,1 +1,139 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-07-19T08:59:50-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">fivethirtyfour - IT Services</title><subtitle>IT services for all.</subtitle><entry><title type="html">Test 2</title><link href="http://localhost:4000/test-2" rel="alternate" type="text/html" title="Test 2" /><published>2019-06-12T00:00:00-07:00</published><updated>2019-06-12T00:00:00-07:00</updated><id>http://localhost:4000/test-2</id><content type="html" xml:base="http://localhost:4000/test-2"></content><author><name></name></author><summary type="html"></summary></entry><entry><title type="html">First post</title><link href="http://localhost:4000/first-post" rel="alternate" type="text/html" title="First post" /><published>2019-06-12T00:00:00-07:00</published><updated>2019-06-12T00:00:00-07:00</updated><id>http://localhost:4000/test</id><content type="html" xml:base="http://localhost:4000/first-post">&lt;p&gt;Hello world&lt;/p&gt;</content><author><name></name></author><summary type="html">Hello world</summary></entry></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-07-19T10:21:56-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">fivethirtyfour - IT Services</title><subtitle>IT services for all.</subtitle><entry><title type="html">Self-hosted VPN with Algo and Azure</title><link href="http://localhost:4000/algo-vpn-and-azure" rel="alternate" type="text/html" title="Self-hosted VPN with Algo and Azure" /><published>2019-07-19T00:00:00-07:00</published><updated>2019-07-19T00:00:00-07:00</updated><id>http://localhost:4000/algo-vpn-and-azure</id><content type="html" xml:base="http://localhost:4000/algo-vpn-and-azure">&lt;h1 id=&quot;what-is-algo&quot;&gt;What is Algo?&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/&quot;&gt;Algo VPN&lt;/a&gt; is an open source self-hosted VPN service. There’s tons of VPN services available but if you want to control what data is collected, used, and/or sold then rolling your own VPN service couldn’t be much easier.&lt;/p&gt;
+
+&lt;p&gt;Algo VPN is an on-demand VPN service in the cloud (or on a local machine that is open to the internet) that uses modern protocols and ciphers, and minimal software. Since the VPN is self-hosted the ability to teardown and rebuild couldn’t be much easier.&lt;/p&gt;
+
+&lt;p&gt;There’s little configuration and pretty close to “one-click” installs via the Ansible packager.&lt;/p&gt;
+
+&lt;h1 id=&quot;what-youll-need&quot;&gt;What you’ll need&lt;/h1&gt;
+
+&lt;p&gt;Listed below are what we will need for the required installation and configuration.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;An account on Azure*&lt;/li&gt;
+  &lt;li&gt;An installation of Ansible&lt;/li&gt;
+  &lt;li&gt;Access to a debian-base operating system (WSL, Ubuntu, Debian, VM w/Debian, etc)&lt;/li&gt;
+  &lt;li&gt;Support for macOS is also available&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Some assumptions&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Windows Subsystem for Linux installed - since I will be doing this from a Windows machine I will be using WSL for this demonstration.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Access to a bash shell&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;This is what we will be using for this demonstration however this is pretty universal for installation on all the other major cloud providers&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;getting-started&quot;&gt;Getting started&lt;/h1&gt;
+
+&lt;h2 id=&quot;pre-requisites&quot;&gt;Pre-requisites&lt;/h2&gt;
+
+&lt;h3 id=&quot;azure-cli&quot;&gt;Azure-cli&lt;/h3&gt;
+
+&lt;p&gt;We will need to install the &lt;strong&gt;Azure CLI&lt;/strong&gt; in order for us to get shell access to our Azure environment. This will help automate a lot of the process and we won’t have to make special API keys since we’ll already be authenticated to the Azure environment.&lt;/p&gt;
+
+&lt;p&gt;Install the Azure-cli pre-requisites&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    curl &lt;span class=&quot;nt&quot;&gt;-sL&lt;/span&gt; https://aka.ms/InstallAzureCLIDeb | &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;bash
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;ansible&quot;&gt;Ansible&lt;/h3&gt;
+
+&lt;p&gt;Add Ansible repository&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-add-repository &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; ppa:ansible/ansible
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Update repositories&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt update &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt upgrade &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;python-tools&quot;&gt;Python tools&lt;/h3&gt;
+
+&lt;p&gt;Install Python tools&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; build-essential libssl-dev libffi-dev python-dev python-pip python-setuptools python-virtualenv
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;algo-vpn-server-installation&quot;&gt;Algo VPN server installation&lt;/h2&gt;
+
+&lt;p&gt;Clone the repository&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    git clone https://github.com/trailsofbits/algo
+    &lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;algo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Install the remaining environment and requirements&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    python &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; virtualenv &lt;span class=&quot;nb&quot;&gt;env
+    source env&lt;/span&gt;/bin/activate
+    python &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; pip &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-U&lt;/span&gt; pip
+    python &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; pip &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; requirements.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Configure the users that will be using the VPN service. In order to do this you will need to edit &lt;code class=&quot;highlighter-rouge&quot;&gt;[config.cfg](http://config.cf)&lt;/code&gt; file that is located in the root of the &lt;em&gt;algo&lt;/em&gt; directory. Use your favorite editor of choice to do this. &lt;em&gt;Substitute my users for whatever your users you want.&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    Users:
+      -  itsame
+      -  bestfriend
+      -  themisses
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Not required:&lt;/strong&gt; &lt;em&gt;At this point if you want to change the default VM that Algo uses to create the image you can. You will need to change the pre-defined size.&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    cloud_providers:
+      azure:
+        size: Standard_B1S &lt;span class=&quot;c&quot;&gt;# This can be changed to something else if need be but this is pretty cheap already and enough for 200+ simultaneous connections&lt;/span&gt;
+        image: 19.04
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Save the file and exit out of the editor&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;For Azure environments only:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Log into your Azure environment via the Azure-cli that we installed earlier. Run the command and a window will pop open for you to authenticate to your environment.&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    az login
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Execute the command to start the Algo installation. I ran into some issues when running it without &lt;code class=&quot;highlighter-rouge&quot;&gt;sudo&lt;/code&gt; so that’s why we’re doing this here.&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; ./algo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You will be prompted to select the cloud provider you would like to install Algo on.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/algo-vpn-azure/cloud-provider.png&quot; alt=&quot;Algo Cloud Provider&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Since we’re installing with Azure we will select &lt;code class=&quot;highlighter-rouge&quot;&gt;5&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Most of the defaults will be more than sufficient for you but just go through them and select what’s more pertinent to you and your situation.&lt;/p&gt;
+
+&lt;p&gt;Select the region you would like to install your VPN server.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/algo-vpn-azure/region.png&quot; alt=&quot;Algo Region Selection&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;From here the installer will run on its own without much interaction.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;There is one caveat though, when it prompts for you to accept the fingerprint, if you don’t do in time it will time out and the installation &lt;em&gt;WILL&lt;/em&gt; fail.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/algo-vpn-azure/ssh.jpg&quot; alt=&quot;Algo SSH Prompt&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;At this point if everything went well the installation should have completed successfully.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/algo-vpn-azure/completed.png&quot; alt=&quot;Algo Completed Message&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;connecting-via-a-client&quot;&gt;Connecting via a client&lt;/h2&gt;
+
+&lt;p&gt;To configure the VPN clients Algo generates WireGuard configuration files for all the users that you specified in your &lt;code class=&quot;highlighter-rouge&quot;&gt;config.cfg&lt;/code&gt; file. Those will be located at the following directories:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;For WireGuard configuration files used for “importing tunnel(s) from file”&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/algo/config/&amp;lt;ip of where the server was installed&amp;gt;/wireguard/&amp;lt;username&amp;gt;.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;em&gt;For WireGuard QR code used for authentication on mobile devices&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/algo/config/&amp;lt;ip of where the server was installed&amp;gt;/wireguard/&amp;lt;username&amp;gt;.png
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To install the WireGuard software you will need to install the specific software for your device. To find the installation files for your device you can head over to &lt;a href=&quot;https://www.wireguard.com/install/&quot;&gt;https://www.wireguard.com/install/&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;After installing the software on your given device import the tunnel configuration and &lt;code class=&quot;highlighter-rouge&quot;&gt;Activate&lt;/code&gt; the tunnel in WireGuard.&lt;/p&gt;
+
+&lt;h2 id=&quot;youre-all-done&quot;&gt;You’re all done!&lt;/h2&gt;</content><author><name></name></author><summary type="html">What is Algo?</summary></entry></feed>
