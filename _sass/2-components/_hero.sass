@@ -5,9 +5,12 @@
     width: 80%
     text-align: center
   .hero-image
+    display: none
     width: 80%
     padding-top: 1rem
     margin: auto
+  .hero-svg
+    width: 100%
 
 @media screen and (min-width: $small-breakpoint)    
   .hero-wrapper
@@ -17,6 +20,7 @@
       width: 50%
       text-align: left
     .hero-image
+      display: block
       width: 50%
       img
         padding: 0
@@ -25,8 +29,13 @@
   .hero-wrapper
     justify-content: space-between
     .hero-content
+      width: 40%
       max-width: 320px
       margin: 0
     .hero-image
+      width: 60%
       max-width: 80%
       margin: 0
+
+  .hero-svg
+    width: 100%

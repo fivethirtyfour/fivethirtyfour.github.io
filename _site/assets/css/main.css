@@ -244,9 +244,12 @@ nav {
     width: 80%;
     text-align: center; }
   .hero-wrapper .hero-image {
+    display: none;
     width: 80%;
     padding-top: 1rem;
     margin: auto; }
+  .hero-wrapper .hero-svg {
+    width: 100%; }
 
 @media screen and (min-width: 500px) {
   .hero-wrapper {
@@ -256,6 +259,7 @@ nav {
       width: 50%;
       text-align: left; }
     .hero-wrapper .hero-image {
+      display: block;
       width: 50%; }
       .hero-wrapper .hero-image img {
         padding: 0; } }
@@ -263,11 +267,16 @@ nav {
   .hero-wrapper {
     justify-content: space-between; }
     .hero-wrapper .hero-content {
+      width: 40%;
       max-width: 320px;
       margin: 0; }
     .hero-wrapper .hero-image {
+      width: 60%;
       max-width: 80%;
-      margin: 0; } }
+      margin: 0; }
+
+  .hero-svg {
+    width: 100%; } }
 .card-grid {
   display: grid;
   justify-content: center;
