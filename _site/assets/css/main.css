@@ -242,6 +242,10 @@ nav {
   margin: 0 0 0 1rem;
   font-weight: 100; }
 
+.brand-link {
+  text-decoration: none;
+  color: #1f2933; }
+
 .navigation-links-wrapper {
   display: flex;
   list-style: none; }
