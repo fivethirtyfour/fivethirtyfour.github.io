@@ -1,6 +1,6 @@
 # Jekyll main configuration file
 
-title: fivethirtyfour - IT Services
+title: fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.
 description: "IT services for all."
 
 baseurl: "/"
@@ -23,3 +23,9 @@ plugins:
 exclude:
   - Gemfile
   - Gemfile.lock
+
+# Socials
+personal_twitter: colinrubbert
+personal_linkedin: colinrubbert
+business_twitter: fivethirtyfour
+business_linkedin: fivethirtyfour
