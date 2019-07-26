@@ -274,8 +274,8 @@ nav {
 
 @media screen and (min-width: 500px) {
   .hero-wrapper {
-    padding: 3rem 0;
-    align-items: center; }
+    align-items: center;
+    padding: 0; }
     .hero-wrapper .hero-content {
       width: 50%;
       text-align: left; }
@@ -298,6 +298,19 @@ nav {
 
   .hero-svg {
     width: 100%; } }
+.svg-dots {
+  position: absolute;
+  z-index: -10; }
+
+.dots-1 {
+  top: 55%;
+  left: 5%; }
+
+.dots-2 {
+  top: 15%;
+  right: 5%;
+  transform: rotate(90deg); }
+
 .card-grid {
   display: grid;
   justify-content: center;
