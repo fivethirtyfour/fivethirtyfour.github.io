@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <title>fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.</title>
+  <meta http-equiv="Content-Type" content="text/html"; charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="canonical" href="http://localhost:4000/matomo-web-analytics-and-azure">
+  <link rel="shortcut icon" href="/assets/icons/favicon/favicon-32.png">
+  <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+  <!-- Site Previews -->
+  <!-- Social Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@colinrubbert">
+<meta name="twitter:title" content="Self-hosted web analytics with Matomo and Azure">
+<meta name="twitter:description" content="IT services for all.">
+
+
+  <meta property="twitter:image:src" content="http://localhost:4000//assets/img/blog-image.png">
+
+
+<!-- Social Facebook/Open Graph -->
+<meta property="og:url" content="http://localhost:4000//matomo-web-analytics-and-azure">
+<meta property="og:title" content="Self-hosted web analytics with Matomo and Azure">
+
+<meta property="og:image" content="http://localhost:4000//assets/img/blog-image.png">
+
+<meta property="og:description" content="IT services for all.">
+<meta property="og:site_name" content="fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.">
+</head>
+  <body>
+      <nav class="container">
+  <div class="brand-wrapper">
+    <svg width="36" height="32" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="8" rx="1" fill="#421987"/>
+      <rect x="36" y="32" width="24" height="8" rx="1" transform="rotate(-180 36 32)" fill="#421987"/>
+      <rect y="12" width="16" height="8" rx="1" fill="#E9B949"/>
+      <rect x="36" y="20" width="16" height="8" rx="1" transform="rotate(-180 36 20)" fill="#E9B949"/>
+      <rect y="24" width="8" height="8" rx="1" fill="#421987"/>
+      <rect x="36" y="8" width="8" height="8" rx="1" transform="rotate(-180 36 8)" fill="#421987"/>
+    </svg>
+    <h2 class="brand">
+      <a href="/" class="brand-link">five<b>thirty</b>four</a>
+    </h2>
+  </div>
+  <div>
+    <ul class="navigation-links-wrapper">
+      <li>
+        <a href="/articles" class="navigation-link">Articles</a>
+      </li>
+      <li>
+        <a href="/#services" class="navigation-link">Services</a>
+      </li>
+      <li>
+        <a href="#contact" class="navigation-link">Contact</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+      <!-- <svg class="svg-wave" viewBox="0 0 1424 207" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 119.326C114.5 95.9928 391.9 53.6261 593.5 70.8261C845.5 92.3261 895 135.826 1105 145.826C1273 153.826 1397 131.493 1438 119.326" stroke="#E9B949" stroke-width="3"/>
+  <path d="M1 119.326C114.5 95.993 286.9 -13.3738 488.5 3.82617C740.5 25.3262 892 194.326 1102 204.326C1270 212.326 1397 131.493 1438 119.326" stroke="#E9B949" stroke-width="3"/>
+  <path d="M1 119.326C114.5 95.9928 317.4 23.6263 519 40.8263C771 62.3263 900 159.326 1110 169.326C1278 177.326 1397 131.493 1438 119.326" stroke="#34126F" stroke-width="3"/>
+</svg> -->
+      <div id="post" class="container">
+  <div class="post-wrapper">
+    <h1 class="post-title">Self-hosted web analytics with Matomo and Azure</h1>
+    <h1 id="matomo--azure--">Matomo + Azure = 📈</h1>
+
+<h1 id="what-is-matomo">What is Matomo?</h1>
+
+<p><a href="https://matomo.org">Matomo</a> is an all-in-one premium web analytics platform with the philosophy of 100% data ownership. Simply stated, you own your data, no one else. That means that no abuse of privacy via Google Analytics, Facebook analytics or any other third-party website analytics software.</p>
+
+<p>Privacy has been a growing concern of mine and I’m starting, bit by bit, to take back some control of that and protect my end users from similar abuses. Be the change you want to see, so the saying goes.</p>
+
+<h1 id="what-youll-need">What you’ll need</h1>
+
+<p>Just like previous articles I’m an Azure user. Azure is great, it’s friendly to use, simple, cost effective, and just good. That’s what we’ll be using.</p>
+
+<p>Listed below are what we will need for required installation and configuration.</p>
+
+<ul>
+  <li>An account on Azure</li>
+  <li>Access to SSH to configure our virtual machine which will be Linux based (WSL, Linux, macOS, etc)</li>
+</ul>
+
+<h1 id="getting-started">Getting started</h1>
+
+<h2 id="pre-requisites">Pre-requisites</h2>
+
+<h3 id="creating-the-virtual-machine">Creating the virtual machine</h3>
+
+<p>Using the free account and credits for Azure we will leverage some of the other free marketplace Azure services.</p>
+
+<p>Log into your newly created or existing Azure account and do a search for <code class="highlighter-rouge">Free services</code></p>
+
+<p><img src="/assets/images/post-images/matomo-analytics-azure/free-services-image.png" alt="Azure Free Services" /></p>
+
+<p>Select <code class="highlighter-rouge">Free services</code> and you’ll be presented with a list of available free services. We’re going to select the <strong>Linux Virtual Machine</strong>, this gives us 750 hours of free B1S this should provide us with some solid, cheap hours of use. Even after the free 750 hours credit it still would only cost, roughly, $8/mo. Pretty cheap, relatively speaking.</p>
+
+<p><img src="/assets/images/post-images/matomo-analytics-azure/free-services-linux-vm.png" alt="Azure B1S Free Linux" /></p>
+
+<p>We need to configure our virtual machine, like so. Obviously fill in your own unique information. If you plan on accessing your VM from more than one computer that you select <code class="highlighter-rouge">Password</code> instead of <code class="highlighter-rouge">SSH public key</code> it’s a bit less mucking about.</p>
+
+<p><img src="/assets/images/post-images/matomo-analytics-azure/create-virtual-machine.png" alt="Azure create virtual machine" /></p>
+
+<p>If everything was configured properly we should have passed validation, if you didn’t fix your errors and try again. Then click <code class="highlighter-rouge">Create</code> to start creating your virtual machine.</p>
+
+<p>Navigate to your VM and check what the <code class="highlighter-rouge">Public IP Address</code> is and then we will use that to ssh into our VM.</p>
+
+<h3 id="configuring-the-virtual-machine">Configuring the Virtual Machine</h3>
+
+<p>SSH into your virtual machine by typing <code class="highlighter-rouge">ssh [username]@[public IP address]</code>, replacing <code class="highlighter-rouge">[username]</code> with the username you specified in the creation of the virtual machine and then replacing <code class="highlighter-rouge">[public IP address]</code> with the public IP address of your virtual machine.</p>
+
+<p>Once we’re logged in update the virtual machine by running the following commands.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt install php7.3 php7.3-cli php7.3-fpm php7.3-curl php7.3-gd mysql-server php7.3-mysql php-xml php7.3-mbstring unzip -y
+sudo apt update
+sudo apt upgrade -y
+</code></pre></div></div>
+
+<p>Now that we’re updated to the latest version(s) of our virtual machines software we can continue onto the install.</p>
+
+<h3 id="creating-a-database">Creating a database</h3>
+
+<p>Before we can run Matomo we will need to create a database for Matomo to use. Let’s sign into our MySQL as our root user.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mysql -u root -p
+</code></pre></div></div>
+
+<p>Create the database.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CREATE DATABASE matomo;
+</code></pre></div></div>
+
+<p>Create a new user for the new database.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CREATE USER `billybob@example.com` IDENTIFIED BY 'your_secret_password';
+</code></pre></div></div>
+
+<p>Grant new user the relevant permissions on the database.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GRANT ALL ON matomo.* TO `billybob@example.com`;
+</code></pre></div></div>
+
+<p>Flush privileges and exit the MySQL console.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FLUSH PRIVILEGES;
+exit
+</code></pre></div></div>
+
+<h2 id="installing-matomo">Installing Matomo</h2>
+
+<h3 id="installing-nginx-and-configure-nginx-for-matomo">Installing Nginx and configure Nginx for Matomo</h3>
+
+<p>Matomo will need some sort of web server software so that we can operate Matomo as intended. For the purpose of this tutorial we’re going to instal Nginx.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt install -y nginx
+</code></pre></div></div>
+
+<p>Now that we’ve got Nginx installed we need to configure Nginx for our Matomo instance. First we’ll need to create the file.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo nano /etc/nginx/sites-available/matomo.conf
+</code></pre></div></div>
+
+<p>Now we will need to populate the file with our server configurations. Obviously change the <code class="highlighter-rouge">server_name</code> with your specific server name.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server {
+
+  listen [::]:443 ssl http2;
+  listen 443 ssl http2;
+  listen [::]:80;
+  listen 80;
+
+  server_name stats.fivethirtyfour.com;
+  root /var/www/matomo/;
+  index index.php;
+
+  location ~ ^/(index|matomo|piwik|js/index).php {
+    include snippets/fastcgi-php.conf;
+    fastcgi_param HTTP_PROXY ""; 
+    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock; 
+  }
+  
+  location = /plugins/HeatmapSessionRecording/configs.php {
+    include snippets/fastcgi-php.conf;
+    fastcgi_param HTTP_PROXY "";
+    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+  }
+
+  location ~* ^.+\.php$ {
+    deny all;
+    return 403;
+  }
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+  
+  location ~ /(config|tmp|core|lang) {
+    deny all;
+    return 403;
+  }
+
+  location ~ \.(gif|ico|jpg|png|svg|js|css|htm|html|mp3|mp4|wav|ogg|avi|ttf|eot|woff|woff2|json)$ {
+    allow all;
+  }
+
+  location ~ /(libs|vendor|plugins|misc/user) {
+    deny all;
+    return 403;
+  }
+
+}
+</code></pre></div></div>
+
+<p>Now we will need to activate the new matomo.conf configuration by linking the file to the <code class="highlighter-rouge">sites-enabled</code> directory.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo ln -s /etc/nginx/sites-available/matomo.conf /etc/nginx/sites-enabled
+</code></pre></div></div>
+
+<p>Test the Nginx configuration for syntax errors.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo nginx -t
+</code></pre></div></div>
+
+<p>Reload the Nginx service</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo systemctl reload nginx.service
+</code></pre></div></div>
+
+<h3 id="download--extract-matomo">Download &amp; Extract Matomo</h3>
+
+<p>Before we download and install Matomo we need to create and move into our webserver’s directory.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo mkdir -p /var/wwww/ &amp;&amp; cd /var/www/
+</code></pre></div></div>
+
+<p>Now we need to download Matomo first before we can install it. From our console run the following commands. The first section is downloading the file, the second section is unzipping our file we just downloaded and the third section is to clean up the .zip file we downloaded.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://builds.matomo.org/matomo.zip &amp;&amp; unzip matomo.zip &amp;&amp; rm matomo.zip
+</code></pre></div></div>
+
+<p>Finally let’s change ownership of the <code class="highlighter-rouge">/var/www/matomo</code> directory to <code class="highlighter-rouge">www-data user</code></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo chown -R www-data:www-data /var/www/matomo
+</code></pre></div></div>
+
+<h3 id="installing-a-lets-encrypt-certificate-for-ssl">Installing a Let’s Encrypt certificate for ssl</h3>
+
+<p>It’s important to run our services and websites over SSL. Not only does it give us our privacy but it provides the confidence and privacy of our users.</p>
+
+<p>First we need to install the required repositories to run LetsEncrypt</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo add-apt-repository ppa:certbot/certbot
+sudo apt update
+sudo apt upgrade -y
+sudo apt install certbot python-certbot-nginx -y
+</code></pre></div></div>
+
+<p>Now that the software is installed we need to create our certificate using the Nginx certbot plugin. Obviously changing the domain for what your site will be.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo certbot --nginx -d stats.fivethirtyfour.com
+</code></pre></div></div>
+
+<p>Now if we look at our <code class="highlighter-rouge">/etc/nginx/sites-available/matomo.conf</code> file we should see that certbot has added our SSL configurations for us.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>######################################
+## SNIPPET OF THE MATOMO.CONF FILE  ##
+######################################
+
+ssl_certificate /etc/letsencrypt/live/stats.fivethirtyfour.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/stats.fivethirtyfour.com/privkey.pem; # managed by Certbot
+}
+
+server {
+    if ($host = stats.fivethirtyfour.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+  listen [::]:80;
+  listen 80;
+  server_name stats.fivethirtyfour.com;
+    return 404; # managed by Certbot
+}
+</code></pre></div></div>
+
+<p>Now head over to your website where you deployed your site and you should see the Matomo installation page.</p>
+
+<p><img src="/assets/images/post-images/matomo-analytics-azure/matomo-setup-installation.png" alt="Matomo installation setup page" /></p>
+
+<h3 id="completing-the-matomo-analytics-setup">Completing the Matomo Analytics setup</h3>
+
+<p>Now go through the Matomo installation process and once you get to the <code class="highlighter-rouge">Database Setup</code> section make sure to file this in with the information you created in the <code class="highlighter-rouge">Creating a database</code> section earlier in this guide.</p>
+
+<p><img src="/assets/images/post-images/matomo-analytics-azure/matomo-database-setup.png" alt="Matomo database setup" /></p>
+
+<p>Continue going through the configuration and once you get to the <code class="highlighter-rouge">Tracking code</code> section make sure you copy your tracking code snippet. This is what you will use to add to your website to gather the analytics information.</p>
+
+<h2 id="congratulations-you-now-have-matomo-analytics-running-in-azure-cloud-instance">Congratulations you now have Matomo Analytics running in Azure cloud instance!!!</h2>
+
+<p><img src="https://media.giphy.com/media/YnSTMd4T9BISZcHcAL/giphy.gif" alt="Congratulations GIF" /></p>
+
+  </div>
+</div>
+      <section id="contact" class="container">
+  <div class="section-header-wrapper">
+    <h1>Contact us today</h1>
+    <p>Find out how we can be your solution for your technology needs.</p>
+  </div>
+    <form method="post" action="/">
+      <input name="Email" type="email" placeholder="Enter in your email">
+      <input type="hidden" name="_to" value="colinrubbert@gmail.com">
+      <input type="text" name="_subject" style="display: none;" value="fivethirtyfour - notification">
+      <input type="text" name="_gotcha" style="display: none;">
+      <input class="button button-primary" type="submit" value="Notify Me">
+    </form>
+
+</section>
+      <footer class="container">
+  <div class="brand-wrapper">
+    <svg class="brand-inverted"width="36" height="32" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="8" rx="1" fill="#FCEFC7"/>
+      <rect x="36" y="32" width="24" height="8" rx="1" transform="rotate(-180 36 32)" fill="#FCEFC7"/>
+      <rect y="12" width="16" height="8" rx="1" fill="#CFBCF2"/>
+      <rect x="36" y="20" width="16" height="8" rx="1" transform="rotate(-180 36 20)" fill="#CFBCF2"/>
+      <rect y="24" width="8" height="8" rx="1" fill="#FCEFC7"/>
+      <rect x="36" y="8" width="8" height="8" rx="1" transform="rotate(-180 36 8)" fill="#FCEFC7"/>
+    </svg>
+    <h2 class="brand">five<b>thirty</b>four</h2>
+  </div>
+</footer>
+<!-- Matomo -->
+<script type="text/javascript">
+  var _paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//stats.fivethirtyfour.com/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '1']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+  </body>

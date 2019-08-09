@@ -69,6 +69,18 @@
       
         <div class="feed-article">
           <h2>
+            <a class="article-title" href="/matomo-web-analytics-and-azure">Self-hosted web analytics with Matomo and Azure</a>
+          </h2>
+          <div class="content">
+            Matomo + Azure = 📈 What is Matomo? Matomo is an all-in-one premium web analytics platform with the philosophy of 100% data ownership. Simply stated, you own your data, no one else. That means that no abuse of privacy via Google Analytics, Facebook analytics or any other third-party website analytics software. Privacy has been a growing concern of mine and...
+            <a href="/matomo-web-analytics-and-azure">
+              <p>Read More ...</p>
+            </a>
+          </div>
+        </div>
+      
+        <div class="feed-article">
+          <h2>
             <a class="article-title" href="/algo-vpn-and-azure">Self-hosted VPN with Algo and Azure</a>
           </h2>
           <div class="content">
@@ -116,21 +128,21 @@
     <h2 class="brand">five<b>thirty</b>four</h2>
   </div>
 </footer>
-<!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
-<script>
-  (function(f, a, t, h, o, m){
-    a[h]=a[h]||function(){
-      (a[h].q=a[h].q||[]).push(arguments)
-    };
-    o=f.createElement('script'),
-    m=f.getElementsByTagName('script')[0];
-    o.async=1; o.src=t; o.id='fathom-script';
-    m.parentNode.insertBefore(o,m)
-  })(document, window, 'http://fivethirtyfourfathomanalytics.centralus.cloudapp.azure.com:9000/tracker.js', 'fathom');
-  fathom('set', 'siteId', 'TSMVH');
-  fathom('trackPageview');
-  </script>
-  <!-- / Fathom -->
+<!-- Matomo -->
+<script type="text/javascript">
+  var _paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//stats.fivethirtyfour.com/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '1']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
   </body>
 
 </html>

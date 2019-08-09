@@ -1,4 +1,238 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-08-05T10:16:40-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.</title><subtitle>IT services for all.</subtitle><entry><title type="html">Self-hosted VPN with Algo and Azure</title><link href="http://localhost:4000/algo-vpn-and-azure" rel="alternate" type="text/html" title="Self-hosted VPN with Algo and Azure" /><published>2019-07-19T00:00:00-07:00</published><updated>2019-07-19T00:00:00-07:00</updated><id>http://localhost:4000/algo-vpn-and-azure</id><content type="html" xml:base="http://localhost:4000/algo-vpn-and-azure">&lt;h1 id=&quot;what-is-algo&quot;&gt;What is Algo?&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-08-08T17:48:27-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.</title><subtitle>IT services for all.</subtitle><entry><title type="html">Self-hosted web analytics with Matomo and Azure</title><link href="http://localhost:4000/matomo-web-analytics-and-azure" rel="alternate" type="text/html" title="Self-hosted web analytics with Matomo and Azure" /><published>2019-08-08T00:00:00-07:00</published><updated>2019-08-08T00:00:00-07:00</updated><id>http://localhost:4000/matomo-web-analytics-and-azure</id><content type="html" xml:base="http://localhost:4000/matomo-web-analytics-and-azure">&lt;h1 id=&quot;matomo--azure--&quot;&gt;Matomo + Azure = 📈&lt;/h1&gt;
+
+&lt;h1 id=&quot;what-is-matomo&quot;&gt;What is Matomo?&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://matomo.org&quot;&gt;Matomo&lt;/a&gt; is an all-in-one premium web analytics platform with the philosophy of 100% data ownership. Simply stated, you own your data, no one else. That means that no abuse of privacy via Google Analytics, Facebook analytics or any other third-party website analytics software.&lt;/p&gt;
+
+&lt;p&gt;Privacy has been a growing concern of mine and I’m starting, bit by bit, to take back some control of that and protect my end users from similar abuses. Be the change you want to see, so the saying goes.&lt;/p&gt;
+
+&lt;h1 id=&quot;what-youll-need&quot;&gt;What you’ll need&lt;/h1&gt;
+
+&lt;p&gt;Just like previous articles I’m an Azure user. Azure is great, it’s friendly to use, simple, cost effective, and just good. That’s what we’ll be using.&lt;/p&gt;
+
+&lt;p&gt;Listed below are what we will need for required installation and configuration.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;An account on Azure&lt;/li&gt;
+  &lt;li&gt;Access to SSH to configure our virtual machine which will be Linux based (WSL, Linux, macOS, etc)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;getting-started&quot;&gt;Getting started&lt;/h1&gt;
+
+&lt;h2 id=&quot;pre-requisites&quot;&gt;Pre-requisites&lt;/h2&gt;
+
+&lt;h3 id=&quot;creating-the-virtual-machine&quot;&gt;Creating the virtual machine&lt;/h3&gt;
+
+&lt;p&gt;Using the free account and credits for Azure we will leverage some of the other free marketplace Azure services.&lt;/p&gt;
+
+&lt;p&gt;Log into your newly created or existing Azure account and do a search for &lt;code class=&quot;highlighter-rouge&quot;&gt;Free services&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/free-services-image.png&quot; alt=&quot;Azure Free Services&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Select &lt;code class=&quot;highlighter-rouge&quot;&gt;Free services&lt;/code&gt; and you’ll be presented with a list of available free services. We’re going to select the &lt;strong&gt;Linux Virtual Machine&lt;/strong&gt;, this gives us 750 hours of free B1S this should provide us with some solid, cheap hours of use. Even after the free 750 hours credit it still would only cost, roughly, $8/mo. Pretty cheap, relatively speaking.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/free-services-linux-vm.png&quot; alt=&quot;Azure B1S Free Linux&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We need to configure our virtual machine, like so. Obviously fill in your own unique information. If you plan on accessing your VM from more than one computer that you select &lt;code class=&quot;highlighter-rouge&quot;&gt;Password&lt;/code&gt; instead of &lt;code class=&quot;highlighter-rouge&quot;&gt;SSH public key&lt;/code&gt; it’s a bit less mucking about.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/create-virtual-machine.png&quot; alt=&quot;Azure create virtual machine&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If everything was configured properly we should have passed validation, if you didn’t fix your errors and try again. Then click &lt;code class=&quot;highlighter-rouge&quot;&gt;Create&lt;/code&gt; to start creating your virtual machine.&lt;/p&gt;
+
+&lt;p&gt;Navigate to your VM and check what the &lt;code class=&quot;highlighter-rouge&quot;&gt;Public IP Address&lt;/code&gt; is and then we will use that to ssh into our VM.&lt;/p&gt;
+
+&lt;h3 id=&quot;configuring-the-virtual-machine&quot;&gt;Configuring the Virtual Machine&lt;/h3&gt;
+
+&lt;p&gt;SSH into your virtual machine by typing &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh [username]@[public IP address]&lt;/code&gt;, replacing &lt;code class=&quot;highlighter-rouge&quot;&gt;[username]&lt;/code&gt; with the username you specified in the creation of the virtual machine and then replacing &lt;code class=&quot;highlighter-rouge&quot;&gt;[public IP address]&lt;/code&gt; with the public IP address of your virtual machine.&lt;/p&gt;
+
+&lt;p&gt;Once we’re logged in update the virtual machine by running the following commands.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install php7.3 php7.3-cli php7.3-fpm php7.3-curl php7.3-gd mysql-server php7.3-mysql php-xml php7.3-mbstring unzip -y
+sudo apt update
+sudo apt upgrade -y
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now that we’re updated to the latest version(s) of our virtual machines software we can continue onto the install.&lt;/p&gt;
+
+&lt;h3 id=&quot;creating-a-database&quot;&gt;Creating a database&lt;/h3&gt;
+
+&lt;p&gt;Before we can run Matomo we will need to create a database for Matomo to use. Let’s sign into our MySQL as our root user.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mysql -u root -p
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Create the database.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE DATABASE matomo;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Create a new user for the new database.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE USER `billybob@example.com` IDENTIFIED BY 'your_secret_password';
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Grant new user the relevant permissions on the database.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;GRANT ALL ON matomo.* TO `billybob@example.com`;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Flush privileges and exit the MySQL console.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FLUSH PRIVILEGES;
+exit
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;installing-matomo&quot;&gt;Installing Matomo&lt;/h2&gt;
+
+&lt;h3 id=&quot;installing-nginx-and-configure-nginx-for-matomo&quot;&gt;Installing Nginx and configure Nginx for Matomo&lt;/h3&gt;
+
+&lt;p&gt;Matomo will need some sort of web server software so that we can operate Matomo as intended. For the purpose of this tutorial we’re going to instal Nginx.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install -y nginx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now that we’ve got Nginx installed we need to configure Nginx for our Matomo instance. First we’ll need to create the file.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo nano /etc/nginx/sites-available/matomo.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we will need to populate the file with our server configurations. Obviously change the &lt;code class=&quot;highlighter-rouge&quot;&gt;server_name&lt;/code&gt; with your specific server name.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;server {
+
+  listen [::]:443 ssl http2;
+  listen 443 ssl http2;
+  listen [::]:80;
+  listen 80;
+
+  server_name stats.fivethirtyfour.com;
+  root /var/www/matomo/;
+  index index.php;
+
+  location ~ ^/(index|matomo|piwik|js/index).php {
+    include snippets/fastcgi-php.conf;
+    fastcgi_param HTTP_PROXY &quot;&quot;; 
+    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock; 
+  }
+  
+  location = /plugins/HeatmapSessionRecording/configs.php {
+    include snippets/fastcgi-php.conf;
+    fastcgi_param HTTP_PROXY &quot;&quot;;
+    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+  }
+
+  location ~* ^.+\.php$ {
+    deny all;
+    return 403;
+  }
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+  
+  location ~ /(config|tmp|core|lang) {
+    deny all;
+    return 403;
+  }
+
+  location ~ \.(gif|ico|jpg|png|svg|js|css|htm|html|mp3|mp4|wav|ogg|avi|ttf|eot|woff|woff2|json)$ {
+    allow all;
+  }
+
+  location ~ /(libs|vendor|plugins|misc/user) {
+    deny all;
+    return 403;
+  }
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we will need to activate the new matomo.conf configuration by linking the file to the &lt;code class=&quot;highlighter-rouge&quot;&gt;sites-enabled&lt;/code&gt; directory.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo ln -s /etc/nginx/sites-available/matomo.conf /etc/nginx/sites-enabled
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Test the Nginx configuration for syntax errors.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo nginx -t
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Reload the Nginx service&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo systemctl reload nginx.service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;download--extract-matomo&quot;&gt;Download &amp;amp; Extract Matomo&lt;/h3&gt;
+
+&lt;p&gt;Before we download and install Matomo we need to create and move into our webserver’s directory.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mkdir -p /var/wwww/ &amp;amp;&amp;amp; cd /var/www/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we need to download Matomo first before we can install it. From our console run the following commands. The first section is downloading the file, the second section is unzipping our file we just downloaded and the third section is to clean up the .zip file we downloaded.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://builds.matomo.org/matomo.zip &amp;amp;&amp;amp; unzip matomo.zip &amp;amp;&amp;amp; rm matomo.zip
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Finally let’s change ownership of the &lt;code class=&quot;highlighter-rouge&quot;&gt;/var/www/matomo&lt;/code&gt; directory to &lt;code class=&quot;highlighter-rouge&quot;&gt;www-data user&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo chown -R www-data:www-data /var/www/matomo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;installing-a-lets-encrypt-certificate-for-ssl&quot;&gt;Installing a Let’s Encrypt certificate for ssl&lt;/h3&gt;
+
+&lt;p&gt;It’s important to run our services and websites over SSL. Not only does it give us our privacy but it provides the confidence and privacy of our users.&lt;/p&gt;
+
+&lt;p&gt;First we need to install the required repositories to run LetsEncrypt&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo add-apt-repository ppa:certbot/certbot
+sudo apt update
+sudo apt upgrade -y
+sudo apt install certbot python-certbot-nginx -y
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now that the software is installed we need to create our certificate using the Nginx certbot plugin. Obviously changing the domain for what your site will be.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo certbot --nginx -d stats.fivethirtyfour.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now if we look at our &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/nginx/sites-available/matomo.conf&lt;/code&gt; file we should see that certbot has added our SSL configurations for us.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;######################################
+## SNIPPET OF THE MATOMO.CONF FILE  ##
+######################################
+
+ssl_certificate /etc/letsencrypt/live/stats.fivethirtyfour.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/stats.fivethirtyfour.com/privkey.pem; # managed by Certbot
+}
+
+server {
+    if ($host = stats.fivethirtyfour.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+  listen [::]:80;
+  listen 80;
+  server_name stats.fivethirtyfour.com;
+    return 404; # managed by Certbot
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now head over to your website where you deployed your site and you should see the Matomo installation page.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/matomo-setup-installation.png&quot; alt=&quot;Matomo installation setup page&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;completing-the-matomo-analytics-setup&quot;&gt;Completing the Matomo Analytics setup&lt;/h3&gt;
+
+&lt;p&gt;Now go through the Matomo installation process and once you get to the &lt;code class=&quot;highlighter-rouge&quot;&gt;Database Setup&lt;/code&gt; section make sure to file this in with the information you created in the &lt;code class=&quot;highlighter-rouge&quot;&gt;Creating a database&lt;/code&gt; section earlier in this guide.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/matomo-database-setup.png&quot; alt=&quot;Matomo database setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Continue going through the configuration and once you get to the &lt;code class=&quot;highlighter-rouge&quot;&gt;Tracking code&lt;/code&gt; section make sure you copy your tracking code snippet. This is what you will use to add to your website to gather the analytics information.&lt;/p&gt;
+
+&lt;h2 id=&quot;congratulations-you-now-have-matomo-analytics-running-in-azure-cloud-instance&quot;&gt;Congratulations you now have Matomo Analytics running in Azure cloud instance!!!&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://media.giphy.com/media/YnSTMd4T9BISZcHcAL/giphy.gif&quot; alt=&quot;Congratulations GIF&quot; /&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">Matomo + Azure = 📈</summary></entry><entry><title type="html">Self-hosted VPN with Algo and Azure</title><link href="http://localhost:4000/algo-vpn-and-azure" rel="alternate" type="text/html" title="Self-hosted VPN with Algo and Azure" /><published>2019-07-19T00:00:00-07:00</published><updated>2019-07-19T00:00:00-07:00</updated><id>http://localhost:4000/algo-vpn-and-azure</id><content type="html" xml:base="http://localhost:4000/algo-vpn-and-azure">&lt;h1 id=&quot;what-is-algo&quot;&gt;What is Algo?&lt;/h1&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/&quot;&gt;Algo VPN&lt;/a&gt; is an open source self-hosted VPN service. There’s tons of VPN services available but if you want to control what data is collected, used, and/or sold then rolling your own VPN service couldn’t be much easier.&lt;/p&gt;
 
