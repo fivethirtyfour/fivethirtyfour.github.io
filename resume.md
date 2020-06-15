@@ -18,7 +18,7 @@ Leveraging my problem solving, critical thinking, and interpersonal skills I hav
 
 ### Apricity | Consulting IT Manager
 
-October 2017 - Present (2 years 6 months)
+October 2017 - Present
 
 Neenah, WI (Remote)
 
@@ -32,7 +32,7 @@ Neenah, WI (Remote)
 
 ### fivethirtyfour | Founder
 
-August 2014 - Present (5 years 8 months)
+August 2014 - Present
 
 Redmond, WA
 
