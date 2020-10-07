@@ -1,3 +1,9 @@
+---
+layout: post
+title: Pi-hole Logs in the HELK Stack
+permalink: pi-hole-logs-in-the-helk-stack
+---
+
 # Pi-hole Logs in the HELK Stack
 
 ## Getting started
