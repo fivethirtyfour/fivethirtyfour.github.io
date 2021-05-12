@@ -4,10 +4,9 @@ auto_deploy: false
 admin_path: ''
 webhook_url: 
 sections:
-- type: directory
+- type: document
   path: _config.yml
-  label: Config
-  create: all
+  label: Configs
   match: "**/*"
 - type: heading
   label: Headings
