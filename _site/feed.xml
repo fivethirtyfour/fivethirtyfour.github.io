@@ -1,4 +1,666 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2020-06-15T13:50:20-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.</title><subtitle>IT services for all.</subtitle><entry><title type="html">Self-hosted web analytics with Matomo and Azure</title><link href="http://localhost:4000/matomo-web-analytics-and-azure" rel="alternate" type="text/html" title="Self-hosted web analytics with Matomo and Azure" /><published>2019-08-08T00:00:00-07:00</published><updated>2019-08-08T00:00:00-07:00</updated><id>http://localhost:4000/matomo-web-analytics-and-azure</id><content type="html" xml:base="http://localhost:4000/matomo-web-analytics-and-azure">&lt;h1 id=&quot;matomo--azure--&quot;&gt;Matomo + Azure = 📈&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://fivethirtyfour.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://fivethirtyfour.com/" rel="alternate" type="text/html" /><updated>2021-05-12T08:03:11-07:00</updated><id>https://fivethirtyfour.com/feed.xml</id><title type="html">fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.</title><subtitle>IT services for all.</subtitle><entry><title type="html">Pi-hole Logs in the HELK Stack</title><link href="https://fivethirtyfour.com/pi-hole-logs-in-the-helk-stack" rel="alternate" type="text/html" title="Pi-hole Logs in the HELK Stack" /><published>2020-10-06T00:00:00-07:00</published><updated>2020-10-06T00:00:00-07:00</updated><id>https://fivethirtyfour.com/pi-hole-logs-in-the-helk-stack</id><content type="html" xml:base="https://fivethirtyfour.com/pi-hole-logs-in-the-helk-stack">&lt;h2 id=&quot;getting-started&quot;&gt;Getting started&lt;/h2&gt;
+
+&lt;p&gt;The purpose of this tutorial is to extend the HELK stack to ingest pi-hole log data. This tutorial can easily extend data ingestion to any custom data that we would need to monitor in our environments.&lt;/p&gt;
+
+&lt;p&gt;The use of pi-hole is to stop ads at the DNS level, effectively cutting potential infection and compromization via malicious ads. This tactic additionally reduces the amount of data that is collected and tracked by blocking ad tracking domains such as Facebook Pixel and Google AdWords.&lt;/p&gt;
+
+&lt;p&gt;Why we chose pi-hole for our introduction to DNS filtering and blocking is the simplicity to get it running, the low cost of deployment (a Raspberry Pi or a small VM or docker container), and the large community support for the project.&lt;/p&gt;
+
+&lt;h2 id=&quot;requirements&quot;&gt;Requirements&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;HELK Stack - &lt;a href=&quot;https://github.com/Cyb3rWard0g/HELK/&quot;&gt;https://github.com/Cyb3rWard0g/HELK/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Pi-hole - &lt;a href=&quot;https://pi-hole.net/&quot;&gt;https://pi-hole.net/&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;**This document will not cover the installation of these software infrastructures&lt;/p&gt;
+
+&lt;h2 id=&quot;installing-filebeat-on-the-pi-hole-os&quot;&gt;Installing Filebeat on the Pi-hole OS&lt;/h2&gt;
+
+&lt;p&gt;This document will cover a Debian based installation, if you are not running a Debian based installation go to Elastic’s Filebeat documentation and follow the proper installation for your particular flavor of Linux, MacOS, or Windows&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation-configuration.html&quot;&gt;https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation-configuration.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;**This documentation will be for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Filebeat 7.9.2&lt;/code&gt; this may be dated by the time you read it, if so follow the above link for current documentation.&lt;/p&gt;
+
+&lt;h3 id=&quot;install-filebeat&quot;&gt;Install Filebeat&lt;/h3&gt;
+
+&lt;p&gt;Open the Terminal and enter the following commands to add the Elastic company’s repository to your Debian installation.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget &lt;span class=&quot;nt&quot;&gt;-qO&lt;/span&gt; - https://artifacts.elastic.co/GPG-KEY-elasticsearch | &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-key add -
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You may need to install the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt-transport-https&lt;/code&gt; package of Debian so double-check to see if either you have it but if you don’t then install it.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;apt-transport-https
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt update&lt;/code&gt; to pull down the package list and update your repository to reflect that we just added the Elastic repo. Then install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Filebeat&lt;/code&gt;. You can accomplish both by running these commands.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt update &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;filebeat &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Configure Filebeat to start automatically during boot.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;filebeat
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Filebeat should be installed now.&lt;/p&gt;
+
+&lt;h3 id=&quot;customizing-filebeat-for-collecting-pi-hole-logs&quot;&gt;Customizing Filebeat for collecting Pi-hole logs&lt;/h3&gt;
+
+&lt;p&gt;The pi-hole stores longterm query data inside of a sqlite database and for the intents of this article we will not be going over how to import longterm or historical pi-hole data into our Logstash environment, not yet at least. What we will be collecting is current and future pi-hole traffic.&lt;/p&gt;
+
+&lt;p&gt;To collect pi-hole traffic we will want to monitor the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pihole.log&lt;/code&gt; log file. This file is located in the following location &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/log/pihole.log&lt;/code&gt; . This log file will have all of the queried domains, ip addresses, blocked domains, etc. essentially all of the data we want to ingest.&lt;/p&gt;
+
+&lt;p&gt;To start monitoring this data we will want to edit our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;filebeat.yml&lt;/code&gt; file. The file can be found in the following location: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/filebeat/filebeat.yml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Replace or update your current &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;filebeat.yml&lt;/code&gt; file with the following configuration.&lt;/p&gt;
+
+&lt;p&gt;**Replace the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tags&lt;/code&gt; sections with the specific tags you would like BUT keep the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pihole&lt;/code&gt; tag for our Logstash filtering process for later.&lt;/p&gt;
+
+&lt;p&gt;**Replace both the Kibana and Logstash host location with your relevant host location. HELK specific examples are provided in within this example filebeat configuration file&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;###################### Filebeat Configuration Example #########################&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# This file is an example configuration file highlighting only the most common&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# options. The filebeat.reference.yml file from the same directory contains all the&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# supported options with more comments. You can use it as a reference.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# You can find the full configuration reference here:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# https://www.elastic.co/guide/en/beats/filebeat/index.html&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# For more available modules and options, please see the filebeat.reference.yml sample&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# configuration file.&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ============================== Filebeat inputs ===============================&lt;/span&gt;
+
+filebeat.inputs:
+
+&lt;span class=&quot;c&quot;&gt;# Each - is an input. Most options can be set at the input level, so&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# you can use different inputs for various configurations.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Below are the input specific configurations.&lt;/span&gt;
+
+- &lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;: log
+
+  &lt;span class=&quot;c&quot;&gt;# Change to true to enable this input configuration.&lt;/span&gt;
+  enabled: &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Paths that should be crawled and fetched. Glob based paths.&lt;/span&gt;
+  paths:
+    - /var/log/pihole.log
+    &lt;span class=&quot;c&quot;&gt;#- c:\programdata\elasticsearch\logs\*&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Exclude lines. A list of regular expressions to match. It drops the lines that are&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# matching any regular expression from the list.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#exclude_lines: [&apos;^DBG&apos;]&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Include lines. A list of regular expressions to match. It exports the lines that are&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# matching any regular expression from the list.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#include_lines: [&apos;^ERR&apos;, &apos;^WARN&apos;]&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Exclude files. A list of regular expressions to match. Filebeat drops the files that&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# are matching any regular expression from the list. By default, no files are dropped.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#exclude_files: [&apos;.gz$&apos;]&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Optional additional fields. These fields can be freely picked&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# to add additional information to the crawled log files for filtering&lt;/span&gt;
+  fields:
+    level: debug
+  &lt;span class=&quot;c&quot;&gt;#  review: 1&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;### Multiline options&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Multiline can be used for log messages spanning multiple lines. This is common&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# for Java Stack Traces or C-Line Continuation&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# The regexp Pattern that has to be matched. The example pattern matches all lines starting with [&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#multiline.pattern: ^\[&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Defines if the pattern set under pattern should be negated or not. Default is false.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#multiline.negate: false&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Match can be set to &quot;after&quot; or &quot;before&quot;. It is used to define if lines should be append to a pattern&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# that was (not) matched before or after or as long as a pattern is not matched based on negate.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# Note: After is the equivalent to previous and before is the equivalent to to next in Logstash&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#multiline.match: after&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ============================== Filebeat modules ==============================&lt;/span&gt;
+
+filebeat.config.modules:
+  &lt;span class=&quot;c&quot;&gt;# Glob pattern for configuration loading&lt;/span&gt;
+  path: &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.config&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;/modules.d/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.yml
+
+  &lt;span class=&quot;c&quot;&gt;# Set to true to enable config reloading&lt;/span&gt;
+  reload.enabled: &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Period on which files under path should be checked for changes&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#reload.period: 10s&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ======================= Elasticsearch template setting =======================&lt;/span&gt;
+
+setup.template.settings:
+  index.number_of_shards: 1
+  &lt;span class=&quot;c&quot;&gt;#index.codec: best_compression&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#_source.enabled: false&lt;/span&gt;
+setup.template.name: &lt;span class=&quot;s2&quot;&gt;&quot;logs-dns-pihole&quot;&lt;/span&gt;
+setup.template.pattern: &lt;span class=&quot;s2&quot;&gt;&quot;logs-dns-pihole-*&quot;&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ================================== General ===================================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# The name of the shipper that publishes the network data. It can be used to group&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# all the transactions sent by a single shipper in the web interface.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#name:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# The tags of the shipper are included in their own field with each&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# transaction published.&lt;/span&gt;
+tags: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pihole&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;additional tags&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;tags that could be specific to a certain locations&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Optional fields that you can specify to add additional information to the&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# output.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#fields:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#  env: staging&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ================================= Dashboards =================================&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# These settings control loading the sample dashboards to the Kibana index. Loading&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# the dashboards is disabled by default and can be enabled either by setting the&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# options here or by using the `setup` command.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#setup.dashboards.enabled: false&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# The URL from where to download the dashboards archive. By default this URL&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# has a value which is computed based on the Beat name and version. For released&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# versions, this URL points to the dashboard archive on the artifacts.elastic.co&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# website.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#setup.dashboards.url:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# =================================== Kibana ===================================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# This requires a Kibana endpoint configuration.&lt;/span&gt;
+setup.kibana:
+
+  &lt;span class=&quot;c&quot;&gt;# Kibana Host&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# Scheme and port can be left out and will be set to the default (http and 5601)&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# In case you specify and additional path, the scheme is required: http://localhost:5601/path&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# IPv6 addresses should always be defined as: https://[2001:db8::1]:5601&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# HELK does not expose :5601 as a domain location, it uses nginx to host the site at :80 or :443&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# host: &quot;example.com/app/kibana&quot;&lt;/span&gt;
+  host: &lt;span class=&quot;s2&quot;&gt;&quot;YOUR HOST DOMAIN/IP ADDRESS AND PORT FOR KIBANA&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Kibana Space ID&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# ID of the Kibana Space into which the dashboards should be loaded. By default,&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# the Default Space will be used.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#space.id:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# =============================== Elastic Cloud ================================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# These settings simplify using Filebeat with the Elastic Cloud (https://cloud.elastic.co/).&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# The cloud.id setting overwrites the `output.elasticsearch.hosts` and&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# `setup.kibana.host` options.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# You can find the `cloud.id` in the Elastic Cloud web UI.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#cloud.id:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# The cloud.auth setting overwrites the `output.elasticsearch.username` and&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# `output.elasticsearch.password` settings. The format is `&amp;lt;user&amp;gt;:&amp;lt;pass&amp;gt;`.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#cloud.auth:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ================================== Outputs ===================================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Configure what output to use when sending the data collected by the beat.&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ---------------------------- Elasticsearch Output ----------------------------&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# output.elasticsearch:&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# Array of hosts to connect to.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# hosts: [&quot;localhost:9200&quot;]&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Protocol - either `http` (default) or `https`.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#protocol: &quot;https&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Authentication credentials - either API key or username/password.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#api_key: &quot;id:api_key&quot;&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#username: &quot;elastic&quot;&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#password: &quot;changeme&quot;&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ------------------------------ Logstash Output -------------------------------&lt;/span&gt;
+output.logstash:
+  &lt;span class=&quot;c&quot;&gt;# The Logstash hosts&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# hosts: [&quot;example.com:5044&quot;]&lt;/span&gt;
+  hosts: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;YOUR HOST DOMAIN/IP ADDRESS AND PORT FOR LOGSTASH:5601&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Optional SSL. By default is off.&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# List of root certificates for HTTPS server verifications&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#ssl.certificate_authorities: [&quot;/etc/pki/root/ca.pem&quot;]&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Certificate for SSL client authentication&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#ssl.certificate: &quot;/etc/pki/client/cert.pem&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# Client Certificate Key&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;#ssl.key: &quot;/etc/pki/client/cert.key&quot;&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ================================= Processors =================================&lt;/span&gt;
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+&lt;span class=&quot;c&quot;&gt;# ================================== Logging ===================================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Sets log level. The default log level is info.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Available log levels are: error, warning, info, debug&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#logging.level: debug&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# At debug level, you can selectively enable logging only for some components.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# To enable all selectors use [&quot;*&quot;]. Examples of other selectors are &quot;beat&quot;,&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# &quot;publish&quot;, &quot;service&quot;.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#logging.selectors: [&quot;*&quot;]&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ============================= X-Pack Monitoring ==============================&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Filebeat can export internal metrics to a central Elasticsearch monitoring&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# cluster.  This requires xpack monitoring to be enabled in Elasticsearch.  The&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# reporting is disabled by default.&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Set to true to enable the monitoring reporter.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#monitoring.enabled: false&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Sets the UUID of the Elasticsearch cluster under which monitoring data for this&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Filebeat instance will appear in the Stack Monitoring UI. If output.elasticsearch&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# is enabled, the UUID is derived from the Elasticsearch cluster referenced by output.elasticsearch.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#monitoring.cluster_uuid:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Uncomment to send the metrics to Elasticsearch. Most settings from the&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Elasticsearch output are accepted here as well.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Note that the settings should point to your Elasticsearch *monitoring* cluster.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Any setting that is not set is automatically inherited from the Elasticsearch&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# output configuration, so if you have the Elasticsearch output configured such&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# that it is pointing to your Elasticsearch monitoring cluster, you can simply&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# uncomment the following line.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#monitoring.elasticsearch:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ============================== Instrumentation ===============================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Instrumentation support for the filebeat.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#instrumentation:&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# Set to true to enable instrumentation of filebeat.&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;#enabled: false&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# Environment in which filebeat is running on (eg: staging, production, etc.)&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;#environment: &quot;&quot;&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# APM Server hosts to report instrumentation results to.&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;#hosts:&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;#  - http://localhost:8200&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# API Key for the APM Server(s).&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# If api_key is set then secret_token will be ignored.&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;#api_key:&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# Secret token for the APM Server(s).&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;#secret_token:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# ================================= Migration ==================================&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# This allows to enable 6.7 migration aliases&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#migration.6_to_7.enabled: true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Restart the Filebeat service to make sure the new configuration is being used properly.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl restart filebeat
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now our pi-hole should be using the new configuration and setup to start sending pi-hole data to our HELK Logstash instance.&lt;/p&gt;
+
+&lt;h2 id=&quot;configuring-helk-logstash-to-ingest-pi-hole-logs&quot;&gt;Configuring HELK Logstash to ingest Pi-hole logs&lt;/h2&gt;
+
+&lt;p&gt;This section will assume the default HELK installation, however, there shouldn’t an issue to modify or tweak some settings to apply to your own Logstash environment.&lt;/p&gt;
+
+&lt;h2 id=&quot;creating-the-pi-hole-configuration-file&quot;&gt;Creating the Pi-hole configuration file&lt;/h2&gt;
+
+&lt;p&gt;Navigate to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HELK/docker/helk-logstash/pipeline&lt;/code&gt; this is where we will add our custom configuration files. This location will be reflected within our helk-logstash container at build time.&lt;/p&gt;
+
+&lt;p&gt;First we will want to create a file called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0100-dns-pihole.conf&lt;/code&gt; there is no particular naming reason why I chose this number just looked like a solid order to place it in.&lt;/p&gt;
+
+&lt;p&gt;Next we will want to add the following contents to our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0100-dns-pihole.conf&lt;/code&gt; file. Use your favorite command line editor to edit the file.&lt;/p&gt;
+
+&lt;p&gt;**Some of the patterns to match are commented out for the sake of my own personal environments being on the latest version of pi-hole and the commented out queries don’t particularly apply to the latest version.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# HELK pihole dns conf file&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# HELK build Stage: Alpha&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Author: Colin Rubbert (@colinrubbert)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# License: GPL-3.0&lt;/span&gt;
+
+input &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  beats &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    port &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 5044
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+filter &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;pihole&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;tags] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    grok &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      patterns_dir &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;LS_HOME&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/pipeline/patterns&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      match &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;message&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# request - query type&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} query&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;%{DATA:query_type}&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\]&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; %{FQDN:domain_request} from %{IP:request_from}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# reponse domain to ip&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is %{IP:ip_response}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# response domain is NXDOMAIN&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is NXDOMAIN$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# response config domain is NXDOMAIN&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} config %{FQDN:domain_request} is NXDOMAIN$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# response config domain is no - DATA&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} config %{FQDN:domain_request} is NODATA-IPv[4,6]$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# reponse domain to ip cname&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&amp;lt;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;CNAME&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&amp;gt;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# respone ip to domain&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply %{IP:ip_request} is %{FQDN:domain_response}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# piholed&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} \/etc\/pihole\/gravity\.list %{FQDN:blocked_domain} is %{IP:pihole}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# piholed 5.0&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} gravity blocked %{FQDN:blocked_domain} is %{IP:pihole}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# piholed local&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} \/etc\/pihole\/local\.list %{FQDN:blocked_domain} is %{IP:pihole}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# piholed CNAME inspection&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is blocked during CNAME inspection&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# blacklist&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} \/etc\/pihole\/black\.list %{FQDN:blocked_domain} is %{IP:pihole}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# regex&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} \/etc\/pihole\/regex\.list %{FQDN:blocked_domain} is %{IP:pihole}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# reverse response etc hosts ip to domain&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} \/etc\/hosts %{IP:ip_request} is %{FQDN:domain_response}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# reverse response etc hosts domain to ip&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} \/etc\/hosts %{FQDN:domain_request} is %{IP:ip_response}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# forward dns to&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} forwarded %{FQDN:domain_request_forward} to %{IP:dns_forward_to}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# cached domain to ip&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is %{IP:ip_response}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# cached ip to domain&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} cached %{IP:ip_request} is %{FQDN:domain_response}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# cached is srv&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} cached %{SRV} is \&amp;lt;SRV\&amp;gt;$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# response is srv&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} reply %{SRV} is \&amp;lt;SRV\&amp;gt;$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# cached domain to ip cname&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&amp;lt;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;CNAME&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&amp;gt;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# cached domain is NXDOMAIN&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is NXDOMAIN$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# cached domain is no - DATA&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is NODATA-IPv[4,6]$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# cached domain is no - DATA&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is NODATA$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# domain is no - DATA&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is NODATA-IPv[4,6]$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# domain is no - DATA&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is NODATA$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# exactly blacklisted&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} exactly blacklisted %{FQDN:blocked_domain} is %{IP:pihole}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# regex blacklisted&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} regex blacklisted %{FQDN:blocked_domain} is %{IP:pihole}$&quot;&lt;/span&gt;,
+
+          &lt;span class=&quot;c&quot;&gt;# PTR - delete ?&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} query\[%{WORD:query_type}\] %{HOSTNAMEPTR:request} from %{IP:request_from}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# PTR forwarded - delete ?&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} forwarded %{HOSTNAMEPTR:request} to %{IP:dns_forward_to}$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# clients sending url instead of domain&lt;/span&gt;
+          &lt;span class=&quot;c&quot;&gt;# &quot;^%{DNSMASQPREFIX} (query\[.*\]|config|forwarded|reply|cached) %{URI:URI}.*$&quot;,&lt;/span&gt;
+
+          &lt;span class=&quot;c&quot;&gt;# SERVFAIL&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;^%{DNSMASQPREFIX} reply error is SERVFAIL&quot;&lt;/span&gt;
+
+        &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# to do cached and cached reverse&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;cached&quot;&lt;/span&gt;
+    and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;NXDOMAIN&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cached NXDOMAIN&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;NODATA] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;NODATA&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;request_from] and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;query&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;request and query type&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;ip_response] and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;reply&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      geoip &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;ip_response&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;response domain to ip&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;CNAME&quot;&lt;/span&gt;
+    and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;reply&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;response domain to ip CNAME&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;domain_response] and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~&lt;span class=&quot;s2&quot;&gt;&quot;reply&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;response ip to domain&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      geoip &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;ip_request&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;blocked_domain] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;piholed&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\/&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;etc&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\/&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;hosts&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;reverse hostsfile&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;dns_forward_to] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;dns forward&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;ip_request] and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;cached&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cached ip to domain&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      geoip &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;ip_request&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;domain_request] and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;cached&quot;&lt;/span&gt;
+    and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;CNAME&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cached domain to ip cname&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;else if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;domain_request] and &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;message] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;~ &lt;span class=&quot;s2&quot;&gt;&quot;cached&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_tag &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cached domain to ip&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      geoip &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;ip_response&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;domain_request] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      geoip &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# cache_size =&amp;gt; &quot;10000&quot;&lt;/span&gt;
+        &lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;domain_request&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;ip_response] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_field &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;ip_or_domain_response&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;%{domain_request}&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;domain_response] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_field &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;ip_or_domain_response&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;%{domain_response}&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;blocked_domain] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        add_field &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;ip_or_domain_response&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;%{blocked_domain}&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      add_field &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;[source_fqdn]&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;%{source_host}&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      remove_field &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;port&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    dns &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      nameserver &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;localhost&quot;&lt;/span&gt;
+      reverse &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;source_fqdn&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      action &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;replace&quot;&lt;/span&gt;
+      hit_cache_size &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 10000
+      hit_cache_ttl &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 900
+      failed_cache_size &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 512
+      failed_cache_ttl &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; 900
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nb&quot;&gt;date&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      match &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;date&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;MMM  d HH:mm:ss&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;MMM dd HH:mm:ss&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      timezone &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;America/Chicago&quot;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;%&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;source_host] &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    mutate &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      gsub &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;s2&quot;&gt;&quot;source_host&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;%.*$&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+output &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# stdout { codec =&amp;gt; rubydebug }&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;pihole&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;tags]&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    elasticsearch &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      hosts &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;helk-elasticsearch:9200&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+      manage_template &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true
+      &lt;/span&gt;index &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;logs-dns-pihole-%{+YYYY.MM.dd}&quot;&lt;/span&gt;
+      user &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;elastic&apos;&lt;/span&gt;
+      &lt;span class=&quot;c&quot;&gt;#password =&amp;gt; &apos;elasticpassword&apos;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Our configuration file is now done but before we restart our helk-logstash instance we need to create a custom pattern since our configuration file uses custom variables for the filtering process.&lt;/p&gt;
+
+&lt;h3 id=&quot;creating-a-custom-pattern-for-our-dns-pihole-configuration&quot;&gt;Creating a custom pattern for our dns-pihole configuration&lt;/h3&gt;
+
+&lt;p&gt;HELK out of the box doesn’t have a spot for you to place your custom configurations but since we know that the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pipeline&lt;/code&gt; directory will be reflected at build time of our docker container we can make a custom folder within our pipeline directory for our custom patterns.&lt;/p&gt;
+
+&lt;p&gt;To create our custom folder in our pipeline file we will need to make a new folder. We should already be in our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HELK/docker/helk-logstash/pipeline&lt;/code&gt; folder.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# From the HELK/docker/helk-logstash/pipeline directory&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;mkdir &lt;/span&gt;patterns
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Moving to our new directory we will need to make our file for our custom pattern and we will name it &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dns-pihole&lt;/code&gt; to do this we will run the following command.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# From the HELK/docker/helk-logstash/pipeline/patterns directory&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;touch &lt;/span&gt;dns-pihole
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Next we will want to edit our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dns-pihole&lt;/code&gt; file with our custom pattern. Edit the file and add the following custom variable patterns.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# dns-pihole pattern&lt;/span&gt;
+HOSTNAMEPTR &lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;?:[&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;_0-9A-Za-z][0-9A-Za-z-]&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;0,62&lt;span class=&quot;o&quot;&gt;})(&lt;/span&gt;?:&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;?:[&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;_0-9A-Za-z][0-9A-Za-z-]&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;0,62&lt;span class=&quot;o&quot;&gt;}))&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;?|&lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+NODATA NODATA-[[:word:]]+
+SRV _+.+&lt;span class=&quot;se&quot;&gt;\S&lt;/span&gt;
+FQDN &lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;?:[&lt;span class=&quot;se&quot;&gt;\w&lt;/span&gt;-][&lt;span class=&quot;se&quot;&gt;\w&lt;/span&gt;-]&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;0,62&lt;span class=&quot;o&quot;&gt;})(&lt;/span&gt;?:&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;?:[&lt;span class=&quot;se&quot;&gt;\w&lt;/span&gt;-][&lt;span class=&quot;se&quot;&gt;\w&lt;/span&gt;-]&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;0,62&lt;span class=&quot;o&quot;&gt;}))&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\.&lt;/span&gt;?|&lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+DNSMASQPREFIX %&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;SYSLOGTIMESTAMP:date&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; %&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;SYSLOGPROG&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;: %&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;INT:logrow&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; %&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;IP:source_host&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\/&lt;/span&gt;%&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;POSINT:source_port&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+URI %&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;URIPROTO&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;:&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;//&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;?&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;?:%&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;URIHOST&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;?&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;?:%&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;URIPATH&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;?
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we will have to restart our helk-logstash container to rebuild our custom pi-hole configuration.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Restart helk-logstash docker container&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;docker restart helk-logstash
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now if everything is working we should be ingesting our Pi-hole logs into our HELK Logstash endpoint.&lt;/p&gt;
+
+&lt;p&gt;We should now see an options for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;logs-dns-pihole*&lt;/code&gt; index pattern in our HELK Kibana instance.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/pi-hole-logs-in-the-helk-stack/pi_hole_1.png&quot; alt=&quot;Kibana discovery Pi-hole change index pattern&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If it’s not there you may have to go into your &lt;strong&gt;&lt;em&gt;management&lt;/em&gt;&lt;/strong&gt; page and look and see if it’s present in your Kibana &lt;strong&gt;&lt;em&gt;index patterns&lt;/em&gt;&lt;/strong&gt;, if it’s not in your &lt;strong&gt;&lt;em&gt;index patterns&lt;/em&gt;&lt;/strong&gt; check and see if there are any logs that are indicating that there is an error anywhere.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/post-images/pi-hole-logs-in-the-helk-stack/pi_hole_2.png&quot; alt=&quot;Kibana index management index patterns&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;The HELK project is a fantastic out of the box logging infrastructure and extending the ingestion and collection of your data and providing new data sources with custom patterns is fairly easy once you know how to do it.&lt;/p&gt;
+
+&lt;p&gt;As with any project, your mileage may vary, but the resources for the ELK stack as well as the HELK Github repository are valuable resources to troubleshoot any issues.&lt;/p&gt;
+
+&lt;p&gt;This article focuses on the pi-hole, however, applying these steps could be easily be applied to other custom data points for extending your logs.&lt;/p&gt;</content><author><name></name></author><summary type="html">Getting started</summary></entry><entry><title type="html">Self-hosted web analytics with Matomo and Azure</title><link href="https://fivethirtyfour.com/matomo-web-analytics-and-azure" rel="alternate" type="text/html" title="Self-hosted web analytics with Matomo and Azure" /><published>2019-08-08T00:00:00-07:00</published><updated>2019-08-08T00:00:00-07:00</updated><id>https://fivethirtyfour.com/matomo-web-analytics-and-azure</id><content type="html" xml:base="https://fivethirtyfour.com/matomo-web-analytics-and-azure">&lt;h1 id=&quot;matomo--azure--&quot;&gt;Matomo + Azure = 📈&lt;/h1&gt;
 
 &lt;h1 id=&quot;what-is-matomo&quot;&gt;What is Matomo?&lt;/h1&gt;
 
@@ -25,29 +687,29 @@
 
 &lt;p&gt;Using the free account and credits for Azure we will leverage some of the other free marketplace Azure services.&lt;/p&gt;
 
-&lt;p&gt;Log into your newly created or existing Azure account and do a search for &lt;code class=&quot;highlighter-rouge&quot;&gt;Free services&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Log into your newly created or existing Azure account and do a search for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Free services&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/free-services-image.png&quot; alt=&quot;Azure Free Services&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Select &lt;code class=&quot;highlighter-rouge&quot;&gt;Free services&lt;/code&gt; and you’ll be presented with a list of available free services. We’re going to select the &lt;strong&gt;Linux Virtual Machine&lt;/strong&gt;, this gives us 750 hours of free B1S this should provide us with some solid, cheap hours of use. Even after the free 750 hours credit it still would only cost, roughly, $8/mo. Pretty cheap, relatively speaking.&lt;/p&gt;
+&lt;p&gt;Select &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Free services&lt;/code&gt; and you’ll be presented with a list of available free services. We’re going to select the &lt;strong&gt;Linux Virtual Machine&lt;/strong&gt;, this gives us 750 hours of free B1S this should provide us with some solid, cheap hours of use. Even after the free 750 hours credit it still would only cost, roughly, $8/mo. Pretty cheap, relatively speaking.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/free-services-linux-vm.png&quot; alt=&quot;Azure B1S Free Linux&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;We need to configure our virtual machine, like so. Obviously fill in your own unique information. If you plan on accessing your VM from more than one computer that you select &lt;code class=&quot;highlighter-rouge&quot;&gt;Password&lt;/code&gt; instead of &lt;code class=&quot;highlighter-rouge&quot;&gt;SSH public key&lt;/code&gt; it’s a bit less mucking about.&lt;/p&gt;
+&lt;p&gt;We need to configure our virtual machine, like so. Obviously fill in your own unique information. If you plan on accessing your VM from more than one computer that you select &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Password&lt;/code&gt; instead of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SSH public key&lt;/code&gt; it’s a bit less mucking about.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/create-virtual-machine.png&quot; alt=&quot;Azure create virtual machine&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;If everything was configured properly we should have passed validation, if you didn’t fix your errors and try again. Then click &lt;code class=&quot;highlighter-rouge&quot;&gt;Create&lt;/code&gt; to start creating your virtual machine.&lt;/p&gt;
+&lt;p&gt;If everything was configured properly we should have passed validation, if you didn’t fix your errors and try again. Then click &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Create&lt;/code&gt; to start creating your virtual machine.&lt;/p&gt;
 
-&lt;p&gt;Navigate to your VM and check what the &lt;code class=&quot;highlighter-rouge&quot;&gt;Public IP Address&lt;/code&gt; is and then we will use that to ssh into our VM.&lt;/p&gt;
+&lt;p&gt;Navigate to your VM and check what the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Public IP Address&lt;/code&gt; is and then we will use that to ssh into our VM.&lt;/p&gt;
 
 &lt;h3 id=&quot;configuring-the-virtual-machine&quot;&gt;Configuring the Virtual Machine&lt;/h3&gt;
 
-&lt;p&gt;SSH into your virtual machine by typing &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh [username]@[public IP address]&lt;/code&gt;, replacing &lt;code class=&quot;highlighter-rouge&quot;&gt;[username]&lt;/code&gt; with the username you specified in the creation of the virtual machine and then replacing &lt;code class=&quot;highlighter-rouge&quot;&gt;[public IP address]&lt;/code&gt; with the public IP address of your virtual machine.&lt;/p&gt;
+&lt;p&gt;SSH into your virtual machine by typing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ssh [username]@[public IP address]&lt;/code&gt;, replacing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[username]&lt;/code&gt; with the username you specified in the creation of the virtual machine and then replacing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[public IP address]&lt;/code&gt; with the public IP address of your virtual machine.&lt;/p&gt;
 
 &lt;p&gt;Once we’re logged in update the virtual machine by running the following commands.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install php7.3 php7.3-cli php7.3-fpm php7.3-curl php7.3-gd mysql-server php7.3-mysql php-xml php7.3-mbstring unzip -y
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install php7.3 php7.3-cli php7.3-fpm php7.3-curl php7.3-gd mysql-server php7.3-mysql php-xml php7.3-mbstring unzip -y
 sudo apt update
 sudo apt upgrade -y
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -58,27 +720,27 @@ sudo apt upgrade -y
 
 &lt;p&gt;Before we can run Matomo we will need to create a database for Matomo to use. Let’s sign into our MySQL as our root user.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mysql -u root -p
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mysql -u root -p
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Create the database.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE DATABASE matomo;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE DATABASE matomo;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Create a new user for the new database.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE USER `billybob@example.com` IDENTIFIED BY 'your_secret_password';
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE USER `billybob@example.com` IDENTIFIED BY &apos;your_secret_password&apos;;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Grant new user the relevant permissions on the database.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;GRANT ALL ON matomo.* TO `billybob@example.com`;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;GRANT ALL ON matomo.* TO `billybob@example.com`;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Flush privileges and exit the MySQL console.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FLUSH PRIVILEGES;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FLUSH PRIVILEGES;
 exit
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
@@ -88,17 +750,17 @@ exit
 
 &lt;p&gt;Matomo will need some sort of web server software so that we can operate Matomo as intended. For the purpose of this tutorial we’re going to instal Nginx.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install -y nginx
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install -y nginx
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now that we’ve got Nginx installed we need to configure Nginx for our Matomo instance. First we’ll need to create the file.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo nano /etc/nginx/sites-available/matomo.conf
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo nano /etc/nginx/sites-available/matomo.conf
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now we will need to populate the file with our server configurations. Obviously change the &lt;code class=&quot;highlighter-rouge&quot;&gt;server_name&lt;/code&gt; with your specific server name.&lt;/p&gt;
+&lt;p&gt;Now we will need to populate the file with our server configurations. Obviously change the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;server_name&lt;/code&gt; with your specific server name.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;server {
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;server {
 
   listen [::]:443 ssl http2;
   listen 443 ssl http2;
@@ -147,36 +809,36 @@ exit
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now we will need to activate the new matomo.conf configuration by linking the file to the &lt;code class=&quot;highlighter-rouge&quot;&gt;sites-enabled&lt;/code&gt; directory.&lt;/p&gt;
+&lt;p&gt;Now we will need to activate the new matomo.conf configuration by linking the file to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sites-enabled&lt;/code&gt; directory.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo ln -s /etc/nginx/sites-available/matomo.conf /etc/nginx/sites-enabled
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo ln -s /etc/nginx/sites-available/matomo.conf /etc/nginx/sites-enabled
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Test the Nginx configuration for syntax errors.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo nginx -t
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo nginx -t
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Reload the Nginx service&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo systemctl reload nginx.service
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo systemctl reload nginx.service
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h3 id=&quot;download--extract-matomo&quot;&gt;Download &amp;amp; Extract Matomo&lt;/h3&gt;
 
 &lt;p&gt;Before we download and install Matomo we need to create and move into our webserver’s directory.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mkdir -p /var/wwww/ &amp;amp;&amp;amp; cd /var/www/
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mkdir -p /var/wwww/ &amp;amp;&amp;amp; cd /var/www/
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now we need to download Matomo first before we can install it. From our console run the following commands. The first section is downloading the file, the second section is unzipping our file we just downloaded and the third section is to clean up the .zip file we downloaded.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://builds.matomo.org/matomo.zip &amp;amp;&amp;amp; unzip matomo.zip &amp;amp;&amp;amp; rm matomo.zip
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://builds.matomo.org/matomo.zip &amp;amp;&amp;amp; unzip matomo.zip &amp;amp;&amp;amp; rm matomo.zip
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Finally let’s change ownership of the &lt;code class=&quot;highlighter-rouge&quot;&gt;/var/www/matomo&lt;/code&gt; directory to &lt;code class=&quot;highlighter-rouge&quot;&gt;www-data user&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Finally let’s change ownership of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/www/matomo&lt;/code&gt; directory to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;www-data user&lt;/code&gt;&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo chown -R www-data:www-data /var/www/matomo
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo chown -R www-data:www-data /var/www/matomo
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h3 id=&quot;installing-a-lets-encrypt-certificate-for-ssl&quot;&gt;Installing a Let’s Encrypt certificate for ssl&lt;/h3&gt;
@@ -185,7 +847,7 @@ exit
 
 &lt;p&gt;First we need to install the required repositories to run LetsEncrypt&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo add-apt-repository ppa:certbot/certbot
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo add-apt-repository ppa:certbot/certbot
 sudo apt update
 sudo apt upgrade -y
 sudo apt install certbot python-certbot-nginx -y
@@ -193,12 +855,12 @@ sudo apt install certbot python-certbot-nginx -y
 
 &lt;p&gt;Now that the software is installed we need to create our certificate using the Nginx certbot plugin. Obviously changing the domain for what your site will be.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo certbot --nginx -d stats.fivethirtyfour.com
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo certbot --nginx -d stats.fivethirtyfour.com
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now if we look at our &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/nginx/sites-available/matomo.conf&lt;/code&gt; file we should see that certbot has added our SSL configurations for us.&lt;/p&gt;
+&lt;p&gt;Now if we look at our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/nginx/sites-available/matomo.conf&lt;/code&gt; file we should see that certbot has added our SSL configurations for us.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;######################################
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;######################################
 ## SNIPPET OF THE MATOMO.CONF FILE  ##
 ######################################
 
@@ -224,15 +886,15 @@ server {
 
 &lt;h3 id=&quot;completing-the-matomo-analytics-setup&quot;&gt;Completing the Matomo Analytics setup&lt;/h3&gt;
 
-&lt;p&gt;Now go through the Matomo installation process and once you get to the &lt;code class=&quot;highlighter-rouge&quot;&gt;Database Setup&lt;/code&gt; section make sure to file this in with the information you created in the &lt;code class=&quot;highlighter-rouge&quot;&gt;Creating a database&lt;/code&gt; section earlier in this guide.&lt;/p&gt;
+&lt;p&gt;Now go through the Matomo installation process and once you get to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Database Setup&lt;/code&gt; section make sure to file this in with the information you created in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Creating a database&lt;/code&gt; section earlier in this guide.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/post-images/matomo-analytics-azure/matomo-database-setup.png&quot; alt=&quot;Matomo database setup&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Continue going through the configuration and once you get to the &lt;code class=&quot;highlighter-rouge&quot;&gt;Tracking code&lt;/code&gt; section make sure you copy your tracking code snippet. This is what you will use to add to your website to gather the analytics information.&lt;/p&gt;
+&lt;p&gt;Continue going through the configuration and once you get to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Tracking code&lt;/code&gt; section make sure you copy your tracking code snippet. This is what you will use to add to your website to gather the analytics information.&lt;/p&gt;
 
 &lt;h2 id=&quot;congratulations-you-now-have-matomo-analytics-running-in-azure-cloud-instance&quot;&gt;Congratulations you now have Matomo Analytics running in Azure cloud instance!!!&lt;/h2&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://media.giphy.com/media/YnSTMd4T9BISZcHcAL/giphy.gif&quot; alt=&quot;Congratulations GIF&quot; /&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">Matomo + Azure = 📈</summary></entry><entry><title type="html">Self-hosted VPN with Algo and Azure</title><link href="http://localhost:4000/algo-vpn-and-azure" rel="alternate" type="text/html" title="Self-hosted VPN with Algo and Azure" /><published>2019-07-19T00:00:00-07:00</published><updated>2019-07-19T00:00:00-07:00</updated><id>http://localhost:4000/algo-vpn-and-azure</id><content type="html" xml:base="http://localhost:4000/algo-vpn-and-azure">&lt;h1 id=&quot;what-is-algo&quot;&gt;What is Algo?&lt;/h1&gt;
+&lt;p&gt;&lt;img src=&quot;https://media.giphy.com/media/YnSTMd4T9BISZcHcAL/giphy.gif&quot; alt=&quot;Congratulations GIF&quot; /&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">Matomo + Azure = 📈</summary></entry><entry><title type="html">Self-hosted VPN with Algo and Azure</title><link href="https://fivethirtyfour.com/algo-vpn-and-azure" rel="alternate" type="text/html" title="Self-hosted VPN with Algo and Azure" /><published>2019-07-19T00:00:00-07:00</published><updated>2019-07-19T00:00:00-07:00</updated><id>https://fivethirtyfour.com/algo-vpn-and-azure</id><content type="html" xml:base="https://fivethirtyfour.com/algo-vpn-and-azure">&lt;h1 id=&quot;what-is-algo&quot;&gt;What is Algo?&lt;/h1&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/&quot;&gt;Algo VPN&lt;/a&gt; is an open source self-hosted VPN service. There’s tons of VPN services available but if you want to control what data is collected, used, and/or sold then rolling your own VPN service couldn’t be much easier.&lt;/p&gt;
 
@@ -304,7 +966,7 @@ server {
     python &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; pip &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; requirements.txt
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Configure the users that will be using the VPN service. In order to do this you will need to edit &lt;code class=&quot;highlighter-rouge&quot;&gt;[config.cfg](http://config.cf)&lt;/code&gt; file that is located in the root of the &lt;em&gt;algo&lt;/em&gt; directory. Use your favorite editor of choice to do this. &lt;em&gt;Substitute my users for whatever your users you want.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Configure the users that will be using the VPN service. In order to do this you will need to edit &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[config.cfg](http://config.cf)&lt;/code&gt; file that is located in the root of the &lt;em&gt;algo&lt;/em&gt; directory. Use your favorite editor of choice to do this. &lt;em&gt;Substitute my users for whatever your users you want.&lt;/em&gt;&lt;/p&gt;
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    Users:
       -  itsame
       -  bestfriend
@@ -326,7 +988,7 @@ server {
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    az login
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Execute the command to start the Algo installation. I ran into some issues when running it without &lt;code class=&quot;highlighter-rouge&quot;&gt;sudo&lt;/code&gt; so that’s why we’re doing this here.&lt;/p&gt;
+&lt;p&gt;Execute the command to start the Algo installation. I ran into some issues when running it without &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sudo&lt;/code&gt; so that’s why we’re doing this here.&lt;/p&gt;
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; ./algo
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
@@ -334,7 +996,7 @@ server {
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/post-images/algo-vpn-azure/cloud-provider.png&quot; alt=&quot;Algo Cloud Provider&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Since we’re installing with Azure we will select &lt;code class=&quot;highlighter-rouge&quot;&gt;5&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Since we’re installing with Azure we will select &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;5&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;Most of the defaults will be more than sufficient for you but just go through them and select what’s more pertinent to you and your situation.&lt;/p&gt;
 
@@ -354,20 +1016,20 @@ server {
 
 &lt;h2 id=&quot;connecting-via-a-client&quot;&gt;Connecting via a client&lt;/h2&gt;
 
-&lt;p&gt;To configure the VPN clients Algo generates WireGuard configuration files for all the users that you specified in your &lt;code class=&quot;highlighter-rouge&quot;&gt;config.cfg&lt;/code&gt; file. Those will be located at the following directories:&lt;/p&gt;
+&lt;p&gt;To configure the VPN clients Algo generates WireGuard configuration files for all the users that you specified in your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;config.cfg&lt;/code&gt; file. Those will be located at the following directories:&lt;/p&gt;
 
 &lt;p&gt;&lt;em&gt;For WireGuard configuration files used for “importing tunnel(s) from file”&lt;/em&gt;&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/algo/config/&amp;lt;ip of where the server was installed&amp;gt;/wireguard/&amp;lt;username&amp;gt;.conf
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/algo/config/&amp;lt;ip of where the server was installed&amp;gt;/wireguard/&amp;lt;username&amp;gt;.conf
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;em&gt;For WireGuard QR code used for authentication on mobile devices&lt;/em&gt;&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/algo/config/&amp;lt;ip of where the server was installed&amp;gt;/wireguard/&amp;lt;username&amp;gt;.png
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/algo/config/&amp;lt;ip of where the server was installed&amp;gt;/wireguard/&amp;lt;username&amp;gt;.png
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;To install the WireGuard software you will need to install the specific software for your device. To find the installation files for your device you can head over to &lt;a href=&quot;https://www.wireguard.com/install/&quot;&gt;https://www.wireguard.com/install/&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;After installing the software on your given device import the tunnel configuration and &lt;code class=&quot;highlighter-rouge&quot;&gt;Activate&lt;/code&gt; the tunnel in WireGuard.&lt;/p&gt;
+&lt;p&gt;After installing the software on your given device import the tunnel configuration and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Activate&lt;/code&gt; the tunnel in WireGuard.&lt;/p&gt;
 
 &lt;h2 id=&quot;youre-all-done&quot;&gt;You’re all done!&lt;/h2&gt;</content><author><name></name></author><summary type="html">What is Algo?</summary></entry></feed>

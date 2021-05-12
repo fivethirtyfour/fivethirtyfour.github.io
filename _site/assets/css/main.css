@@ -89,7 +89,7 @@ pre {
 pre, code {
   color: #250755;
   background: #fffaeb;
-  font-family: "Source Code Pro", monospace;
+  font-family: 'Source Code Pro', monospace;
   text-align: left;
   white-space: pre;
   tab-size: 2;
@@ -145,12 +145,15 @@ p {
   .container {
     padding: 0 5%;
     margin: auto; } }
+
 @media screen and (min-width: 800px) {
   .container {
     padding: 0 10%; } }
+
 @media screen and (min-width: 1600px) {
   .container {
     padding: 0 20%; } }
+
 .wrapper {
   display: flex;
   flex-direction: column; }
@@ -158,11 +161,11 @@ p {
 @media screen and (min-width: 500px) {
   .wrapper {
     flex-direction: row; }
-
   .section-header-wrapper {
     max-width: 520px;
     margin: 2rem auto 4rem auto;
     text-align: center; } }
+
 section {
   padding: 1rem 0; }
 
@@ -185,18 +188,18 @@ svg.secondary {
   background: #7b8793;
   color: #1f2933;
   border: none;
-  box-shadow: inset 0 2px 0 #cad1d8, 0 4px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 0 #cad1d8, 0 4px 4px black;
   margin-top: 1rem; }
 
 .button-primary {
   background: #34126e;
   color: #eae2f8;
-  box-shadow: inset 0 2px 0 #a081d9, 0 4px 4px rgba(0, 0, 0, 0.2); }
+  box-shadow: inset 0 2px 0 #a081d9, 0 4px 4px black; }
 
 .button-secondary {
   background: #e9b949;
   color: #513c06;
-  box-shadow: inset 0 2px 0 #f8e3a5, 0 4px 4px rgba(0, 0, 0, 0.2); }
+  box-shadow: inset 0 2px 0 #f8e3a5, 0 4px 4px black; }
 
 form {
   display: flex;
@@ -205,7 +208,7 @@ form {
 input {
   font-size: 1.15rem;
   line-height: 1.15;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem .75rem;
   border-radius: 3px; }
 
 input[type="email"] {
@@ -224,10 +227,10 @@ input[type="email"] {
   .button {
     margin-top: 0;
     margin-left: 2rem; }
-
   form {
     flex-direction: row;
     justify-content: center; } }
+
 nav {
   display: flex;
   flex-wrap: wrap;
@@ -283,6 +286,7 @@ nav {
       width: 50%; }
       .hero-wrapper .hero-image img {
         padding: 0; } }
+
 @media screen and (min-width: 1200px) {
   .hero-wrapper {
     justify-content: space-between; }
@@ -294,9 +298,9 @@ nav {
       width: 60%;
       max-width: 80%;
       margin: 0; }
-
   .hero-svg {
     width: 100%; } }
+
 .svg-dots {
   position: absolute;
   z-index: -10; }
@@ -337,12 +341,11 @@ nav {
   .card-grid {
     grid-template-columns: 360px 360px;
     grid-row-gap: 0; }
-
   .card:nth-child(odd) {
     margin-bottom: 6rem; }
-
   .card:nth-child(even) {
     margin-top: 6rem; } }
+
 .icon {
   display: flex;
   justify-content: center;
@@ -396,7 +399,7 @@ nav {
   background-image: url("/assets/images/topograph.svg");
   background-size: contain;
   z-index: -100;
-  opacity: 0.6; }
+  opacity: .6; }
 
 #philosophy:after {
   background: linear-gradient(#f5f7fa, white);
@@ -435,3 +438,5 @@ footer {
 .post-title {
   color: #34126e;
   margin-bottom: 5rem; }
+
+/*# sourceMappingURL=main.css.map */

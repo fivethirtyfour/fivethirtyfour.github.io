@@ -221,13 +221,12 @@ code {
 @media print {
   html {
     font-size: 13px; }
-
   table,
   pre {
     page-break-inside: avoid; }
-
   pre {
     word-wrap: break-word; } }
+
 .md-fences {
   background-color: #f8f8f8; }
 
@@ -566,3 +565,5 @@ footer {
 
 #write > p:only-child:empty::before {
   opacity: 1; }
+
+/*# sourceMappingURL=resume.css.map */

@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <title>fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.</title>
+  <meta http-equiv="Content-Type" content="text/html"; charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="canonical" href="https://fivethirtyfour.com/pi-hole-logs-in-the-helk-stack">
+  <link rel="shortcut icon" href="/assets/icons/favicon/favicon-32.png">
+  <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+  
+  <!-- Site Previews -->
+  <!-- Social Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@colinrubbert">
+<meta name="twitter:title" content="Pi-hole Logs in the HELK Stack">
+<meta name="twitter:description" content="IT services for all.">
+
+
+  <meta property="twitter:image:src" content="https://fivethirtyfour.com//assets/img/blog-image.png">
+
+
+<!-- Social Facebook/Open Graph -->
+<meta property="og:url" content="https://fivethirtyfour.com//pi-hole-logs-in-the-helk-stack">
+<meta property="og:title" content="Pi-hole Logs in the HELK Stack">
+
+<meta property="og:image" content="https://fivethirtyfour.com//assets/img/blog-image.png">
+
+<meta property="og:description" content="IT services for all.">
+<meta property="og:site_name" content="fivethirtyfour - nonprofit IT services, small business IT services, enterprise IT services, and web design.">
+</head>
+  <body>
+      <nav class="container">
+  <div class="brand-wrapper">
+    <svg width="36" height="32" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="8" rx="1" fill="#421987"/>
+      <rect x="36" y="32" width="24" height="8" rx="1" transform="rotate(-180 36 32)" fill="#421987"/>
+      <rect y="12" width="16" height="8" rx="1" fill="#E9B949"/>
+      <rect x="36" y="20" width="16" height="8" rx="1" transform="rotate(-180 36 20)" fill="#E9B949"/>
+      <rect y="24" width="8" height="8" rx="1" fill="#421987"/>
+      <rect x="36" y="8" width="8" height="8" rx="1" transform="rotate(-180 36 8)" fill="#421987"/>
+    </svg>
+    <h2 class="brand">
+      <a href="/" class="brand-link">five<b>thirty</b>four</a>
+    </h2>
+  </div>
+  <div>
+    <ul class="navigation-links-wrapper">
+      <li>
+        <a href="/articles" class="navigation-link">Articles</a>
+      </li>
+      <li>
+        <a href="/#services" class="navigation-link">Services</a>
+      </li>
+      <li>
+        <a href="#contact" class="navigation-link">Contact</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+      <!-- <svg class="svg-wave" viewBox="0 0 1424 207" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M1 119.326C114.5 95.9928 391.9 53.6261 593.5 70.8261C845.5 92.3261 895 135.826 1105 145.826C1273 153.826 1397 131.493 1438 119.326" stroke="#E9B949" stroke-width="3"/>
+  <path d="M1 119.326C114.5 95.993 286.9 -13.3738 488.5 3.82617C740.5 25.3262 892 194.326 1102 204.326C1270 212.326 1397 131.493 1438 119.326" stroke="#E9B949" stroke-width="3"/>
+  <path d="M1 119.326C114.5 95.9928 317.4 23.6263 519 40.8263C771 62.3263 900 159.326 1110 169.326C1278 177.326 1397 131.493 1438 119.326" stroke="#34126F" stroke-width="3"/>
+</svg> -->
+      <div id="post" class="container">
+  <div class="post-wrapper">
+    <h1 class="post-title">Pi-hole Logs in the HELK Stack</h1>
+    <h2 id="getting-started">Getting started</h2>
+
+<p>The purpose of this tutorial is to extend the HELK stack to ingest pi-hole log data. This tutorial can easily extend data ingestion to any custom data that we would need to monitor in our environments.</p>
+
+<p>The use of pi-hole is to stop ads at the DNS level, effectively cutting potential infection and compromization via malicious ads. This tactic additionally reduces the amount of data that is collected and tracked by blocking ad tracking domains such as Facebook Pixel and Google AdWords.</p>
+
+<p>Why we chose pi-hole for our introduction to DNS filtering and blocking is the simplicity to get it running, the low cost of deployment (a Raspberry Pi or a small VM or docker container), and the large community support for the project.</p>
+
+<h2 id="requirements">Requirements</h2>
+
+<ol>
+  <li>HELK Stack - <a href="https://github.com/Cyb3rWard0g/HELK/">https://github.com/Cyb3rWard0g/HELK/</a></li>
+  <li>Pi-hole - <a href="https://pi-hole.net/">https://pi-hole.net/</a></li>
+</ol>
+
+<p>**This document will not cover the installation of these software infrastructures</p>
+
+<h2 id="installing-filebeat-on-the-pi-hole-os">Installing Filebeat on the Pi-hole OS</h2>
+
+<p>This document will cover a Debian based installation, if you are not running a Debian based installation go to Elastic’s Filebeat documentation and follow the proper installation for your particular flavor of Linux, MacOS, or Windows</p>
+
+<p><a href="https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation-configuration.html">https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-installation-configuration.html</a></p>
+
+<p>**This documentation will be for <code class="language-plaintext highlighter-rouge">Filebeat 7.9.2</code> this may be dated by the time you read it, if so follow the above link for current documentation.</p>
+
+<h3 id="install-filebeat">Install Filebeat</h3>
+
+<p>Open the Terminal and enter the following commands to add the Elastic company’s repository to your Debian installation.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget <span class="nt">-qO</span> - https://artifacts.elastic.co/GPG-KEY-elasticsearch | <span class="nb">sudo </span>apt-key add -
+</code></pre></div></div>
+
+<p>You may need to install the <code class="language-plaintext highlighter-rouge">apt-transport-https</code> package of Debian so double-check to see if either you have it but if you don’t then install it.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get <span class="nb">install </span>apt-transport-https
+</code></pre></div></div>
+
+<p>Run <code class="language-plaintext highlighter-rouge">apt update</code> to pull down the package list and update your repository to reflect that we just added the Elastic repo. Then install <code class="language-plaintext highlighter-rouge">Filebeat</code>. You can accomplish both by running these commands.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt update <span class="nt">-y</span> <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt <span class="nb">install </span>filebeat <span class="nt">-y</span>
+</code></pre></div></div>
+
+<p>Configure Filebeat to start automatically during boot.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>systemctl <span class="nb">enable </span>filebeat
+</code></pre></div></div>
+
+<p>Filebeat should be installed now.</p>
+
+<h3 id="customizing-filebeat-for-collecting-pi-hole-logs">Customizing Filebeat for collecting Pi-hole logs</h3>
+
+<p>The pi-hole stores longterm query data inside of a sqlite database and for the intents of this article we will not be going over how to import longterm or historical pi-hole data into our Logstash environment, not yet at least. What we will be collecting is current and future pi-hole traffic.</p>
+
+<p>To collect pi-hole traffic we will want to monitor the <code class="language-plaintext highlighter-rouge">pihole.log</code> log file. This file is located in the following location <code class="language-plaintext highlighter-rouge">/var/log/pihole.log</code> . This log file will have all of the queried domains, ip addresses, blocked domains, etc. essentially all of the data we want to ingest.</p>
+
+<p>To start monitoring this data we will want to edit our <code class="language-plaintext highlighter-rouge">filebeat.yml</code> file. The file can be found in the following location: <code class="language-plaintext highlighter-rouge">/etc/filebeat/filebeat.yml</code>.</p>
+
+<p>Replace or update your current <code class="language-plaintext highlighter-rouge">filebeat.yml</code> file with the following configuration.</p>
+
+<p>**Replace the <code class="language-plaintext highlighter-rouge">tags</code> sections with the specific tags you would like BUT keep the <code class="language-plaintext highlighter-rouge">pihole</code> tag for our Logstash filtering process for later.</p>
+
+<p>**Replace both the Kibana and Logstash host location with your relevant host location. HELK specific examples are provided in within this example filebeat configuration file</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">###################### Filebeat Configuration Example #########################</span>
+
+<span class="c"># This file is an example configuration file highlighting only the most common</span>
+<span class="c"># options. The filebeat.reference.yml file from the same directory contains all the</span>
+<span class="c"># supported options with more comments. You can use it as a reference.</span>
+<span class="c">#</span>
+<span class="c"># You can find the full configuration reference here:</span>
+<span class="c"># https://www.elastic.co/guide/en/beats/filebeat/index.html</span>
+
+<span class="c"># For more available modules and options, please see the filebeat.reference.yml sample</span>
+<span class="c"># configuration file.</span>
+
+<span class="c"># ============================== Filebeat inputs ===============================</span>
+
+filebeat.inputs:
+
+<span class="c"># Each - is an input. Most options can be set at the input level, so</span>
+<span class="c"># you can use different inputs for various configurations.</span>
+<span class="c"># Below are the input specific configurations.</span>
+
+- <span class="nb">type</span>: log
+
+  <span class="c"># Change to true to enable this input configuration.</span>
+  enabled: <span class="nb">true</span>
+
+  <span class="c"># Paths that should be crawled and fetched. Glob based paths.</span>
+  paths:
+    - /var/log/pihole.log
+    <span class="c">#- c:\programdata\elasticsearch\logs\*</span>
+
+  <span class="c"># Exclude lines. A list of regular expressions to match. It drops the lines that are</span>
+  <span class="c"># matching any regular expression from the list.</span>
+  <span class="c">#exclude_lines: ['^DBG']</span>
+
+  <span class="c"># Include lines. A list of regular expressions to match. It exports the lines that are</span>
+  <span class="c"># matching any regular expression from the list.</span>
+  <span class="c">#include_lines: ['^ERR', '^WARN']</span>
+
+  <span class="c"># Exclude files. A list of regular expressions to match. Filebeat drops the files that</span>
+  <span class="c"># are matching any regular expression from the list. By default, no files are dropped.</span>
+  <span class="c">#exclude_files: ['.gz$']</span>
+
+  <span class="c"># Optional additional fields. These fields can be freely picked</span>
+  <span class="c"># to add additional information to the crawled log files for filtering</span>
+  fields:
+    level: debug
+  <span class="c">#  review: 1</span>
+
+  <span class="c">### Multiline options</span>
+
+  <span class="c"># Multiline can be used for log messages spanning multiple lines. This is common</span>
+  <span class="c"># for Java Stack Traces or C-Line Continuation</span>
+
+  <span class="c"># The regexp Pattern that has to be matched. The example pattern matches all lines starting with [</span>
+  <span class="c">#multiline.pattern: ^\[</span>
+
+  <span class="c"># Defines if the pattern set under pattern should be negated or not. Default is false.</span>
+  <span class="c">#multiline.negate: false</span>
+
+  <span class="c"># Match can be set to "after" or "before". It is used to define if lines should be append to a pattern</span>
+  <span class="c"># that was (not) matched before or after or as long as a pattern is not matched based on negate.</span>
+  <span class="c"># Note: After is the equivalent to previous and before is the equivalent to to next in Logstash</span>
+  <span class="c">#multiline.match: after</span>
+
+<span class="c"># ============================== Filebeat modules ==============================</span>
+
+filebeat.config.modules:
+  <span class="c"># Glob pattern for configuration loading</span>
+  path: <span class="k">${</span><span class="nv">path</span><span class="p">.config</span><span class="k">}</span>/modules.d/<span class="k">*</span>.yml
+
+  <span class="c"># Set to true to enable config reloading</span>
+  reload.enabled: <span class="nb">false</span>
+
+  <span class="c"># Period on which files under path should be checked for changes</span>
+  <span class="c">#reload.period: 10s</span>
+
+<span class="c"># ======================= Elasticsearch template setting =======================</span>
+
+setup.template.settings:
+  index.number_of_shards: 1
+  <span class="c">#index.codec: best_compression</span>
+  <span class="c">#_source.enabled: false</span>
+setup.template.name: <span class="s2">"logs-dns-pihole"</span>
+setup.template.pattern: <span class="s2">"logs-dns-pihole-*"</span>
+
+<span class="c"># ================================== General ===================================</span>
+
+<span class="c"># The name of the shipper that publishes the network data. It can be used to group</span>
+<span class="c"># all the transactions sent by a single shipper in the web interface.</span>
+<span class="c">#name:</span>
+
+<span class="c"># The tags of the shipper are included in their own field with each</span>
+<span class="c"># transaction published.</span>
+tags: <span class="o">[</span><span class="s2">"pihole"</span>, <span class="s2">"additional tags"</span>, <span class="s2">"tags that could be specific to a certain locations"</span><span class="o">]</span>
+
+<span class="c"># Optional fields that you can specify to add additional information to the</span>
+<span class="c"># output.</span>
+<span class="c">#fields:</span>
+<span class="c">#  env: staging</span>
+
+<span class="c"># ================================= Dashboards =================================</span>
+<span class="c"># These settings control loading the sample dashboards to the Kibana index. Loading</span>
+<span class="c"># the dashboards is disabled by default and can be enabled either by setting the</span>
+<span class="c"># options here or by using the `setup` command.</span>
+<span class="c">#setup.dashboards.enabled: false</span>
+
+<span class="c"># The URL from where to download the dashboards archive. By default this URL</span>
+<span class="c"># has a value which is computed based on the Beat name and version. For released</span>
+<span class="c"># versions, this URL points to the dashboard archive on the artifacts.elastic.co</span>
+<span class="c"># website.</span>
+<span class="c">#setup.dashboards.url:</span>
+
+<span class="c"># =================================== Kibana ===================================</span>
+
+<span class="c"># Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.</span>
+<span class="c"># This requires a Kibana endpoint configuration.</span>
+setup.kibana:
+
+  <span class="c"># Kibana Host</span>
+  <span class="c"># Scheme and port can be left out and will be set to the default (http and 5601)</span>
+  <span class="c"># In case you specify and additional path, the scheme is required: http://localhost:5601/path</span>
+  <span class="c"># IPv6 addresses should always be defined as: https://[2001:db8::1]:5601</span>
+  <span class="c"># HELK does not expose :5601 as a domain location, it uses nginx to host the site at :80 or :443</span>
+  <span class="c"># host: "example.com/app/kibana"</span>
+  host: <span class="s2">"YOUR HOST DOMAIN/IP ADDRESS AND PORT FOR KIBANA"</span>
+
+  <span class="c"># Kibana Space ID</span>
+  <span class="c"># ID of the Kibana Space into which the dashboards should be loaded. By default,</span>
+  <span class="c"># the Default Space will be used.</span>
+  <span class="c">#space.id:</span>
+
+<span class="c"># =============================== Elastic Cloud ================================</span>
+
+<span class="c"># These settings simplify using Filebeat with the Elastic Cloud (https://cloud.elastic.co/).</span>
+
+<span class="c"># The cloud.id setting overwrites the `output.elasticsearch.hosts` and</span>
+<span class="c"># `setup.kibana.host` options.</span>
+<span class="c"># You can find the `cloud.id` in the Elastic Cloud web UI.</span>
+<span class="c">#cloud.id:</span>
+
+<span class="c"># The cloud.auth setting overwrites the `output.elasticsearch.username` and</span>
+<span class="c"># `output.elasticsearch.password` settings. The format is `&lt;user&gt;:&lt;pass&gt;`.</span>
+<span class="c">#cloud.auth:</span>
+
+<span class="c"># ================================== Outputs ===================================</span>
+
+<span class="c"># Configure what output to use when sending the data collected by the beat.</span>
+
+<span class="c"># ---------------------------- Elasticsearch Output ----------------------------</span>
+<span class="c"># output.elasticsearch:</span>
+  <span class="c"># Array of hosts to connect to.</span>
+  <span class="c"># hosts: ["localhost:9200"]</span>
+
+  <span class="c"># Protocol - either `http` (default) or `https`.</span>
+  <span class="c">#protocol: "https"</span>
+
+  <span class="c"># Authentication credentials - either API key or username/password.</span>
+  <span class="c">#api_key: "id:api_key"</span>
+  <span class="c">#username: "elastic"</span>
+  <span class="c">#password: "changeme"</span>
+
+<span class="c"># ------------------------------ Logstash Output -------------------------------</span>
+output.logstash:
+  <span class="c"># The Logstash hosts</span>
+  <span class="c"># hosts: ["example.com:5044"]</span>
+  hosts: <span class="o">[</span><span class="s2">"YOUR HOST DOMAIN/IP ADDRESS AND PORT FOR LOGSTASH:5601"</span><span class="o">]</span>
+
+  <span class="c"># Optional SSL. By default is off.</span>
+  <span class="c"># List of root certificates for HTTPS server verifications</span>
+  <span class="c">#ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]</span>
+
+  <span class="c"># Certificate for SSL client authentication</span>
+  <span class="c">#ssl.certificate: "/etc/pki/client/cert.pem"</span>
+
+  <span class="c"># Client Certificate Key</span>
+  <span class="c">#ssl.key: "/etc/pki/client/cert.key"</span>
+
+<span class="c"># ================================= Processors =================================</span>
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+<span class="c"># ================================== Logging ===================================</span>
+
+<span class="c"># Sets log level. The default log level is info.</span>
+<span class="c"># Available log levels are: error, warning, info, debug</span>
+<span class="c">#logging.level: debug</span>
+
+<span class="c"># At debug level, you can selectively enable logging only for some components.</span>
+<span class="c"># To enable all selectors use ["*"]. Examples of other selectors are "beat",</span>
+<span class="c"># "publish", "service".</span>
+<span class="c">#logging.selectors: ["*"]</span>
+
+<span class="c"># ============================= X-Pack Monitoring ==============================</span>
+<span class="c"># Filebeat can export internal metrics to a central Elasticsearch monitoring</span>
+<span class="c"># cluster.  This requires xpack monitoring to be enabled in Elasticsearch.  The</span>
+<span class="c"># reporting is disabled by default.</span>
+
+<span class="c"># Set to true to enable the monitoring reporter.</span>
+<span class="c">#monitoring.enabled: false</span>
+
+<span class="c"># Sets the UUID of the Elasticsearch cluster under which monitoring data for this</span>
+<span class="c"># Filebeat instance will appear in the Stack Monitoring UI. If output.elasticsearch</span>
+<span class="c"># is enabled, the UUID is derived from the Elasticsearch cluster referenced by output.elasticsearch.</span>
+<span class="c">#monitoring.cluster_uuid:</span>
+
+<span class="c"># Uncomment to send the metrics to Elasticsearch. Most settings from the</span>
+<span class="c"># Elasticsearch output are accepted here as well.</span>
+<span class="c"># Note that the settings should point to your Elasticsearch *monitoring* cluster.</span>
+<span class="c"># Any setting that is not set is automatically inherited from the Elasticsearch</span>
+<span class="c"># output configuration, so if you have the Elasticsearch output configured such</span>
+<span class="c"># that it is pointing to your Elasticsearch monitoring cluster, you can simply</span>
+<span class="c"># uncomment the following line.</span>
+<span class="c">#monitoring.elasticsearch:</span>
+
+<span class="c"># ============================== Instrumentation ===============================</span>
+
+<span class="c"># Instrumentation support for the filebeat.</span>
+<span class="c">#instrumentation:</span>
+    <span class="c"># Set to true to enable instrumentation of filebeat.</span>
+    <span class="c">#enabled: false</span>
+
+    <span class="c"># Environment in which filebeat is running on (eg: staging, production, etc.)</span>
+    <span class="c">#environment: ""</span>
+
+    <span class="c"># APM Server hosts to report instrumentation results to.</span>
+    <span class="c">#hosts:</span>
+    <span class="c">#  - http://localhost:8200</span>
+
+    <span class="c"># API Key for the APM Server(s).</span>
+    <span class="c"># If api_key is set then secret_token will be ignored.</span>
+    <span class="c">#api_key:</span>
+
+    <span class="c"># Secret token for the APM Server(s).</span>
+    <span class="c">#secret_token:</span>
+
+<span class="c"># ================================= Migration ==================================</span>
+
+<span class="c"># This allows to enable 6.7 migration aliases</span>
+<span class="c">#migration.6_to_7.enabled: true</span>
+</code></pre></div></div>
+
+<p>Restart the Filebeat service to make sure the new configuration is being used properly.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>systemctl restart filebeat
+</code></pre></div></div>
+
+<p>Now our pi-hole should be using the new configuration and setup to start sending pi-hole data to our HELK Logstash instance.</p>
+
+<h2 id="configuring-helk-logstash-to-ingest-pi-hole-logs">Configuring HELK Logstash to ingest Pi-hole logs</h2>
+
+<p>This section will assume the default HELK installation, however, there shouldn’t an issue to modify or tweak some settings to apply to your own Logstash environment.</p>
+
+<h2 id="creating-the-pi-hole-configuration-file">Creating the Pi-hole configuration file</h2>
+
+<p>Navigate to <code class="language-plaintext highlighter-rouge">HELK/docker/helk-logstash/pipeline</code> this is where we will add our custom configuration files. This location will be reflected within our helk-logstash container at build time.</p>
+
+<p>First we will want to create a file called <code class="language-plaintext highlighter-rouge">0100-dns-pihole.conf</code> there is no particular naming reason why I chose this number just looked like a solid order to place it in.</p>
+
+<p>Next we will want to add the following contents to our <code class="language-plaintext highlighter-rouge">0100-dns-pihole.conf</code> file. Use your favorite command line editor to edit the file.</p>
+
+<p>**Some of the patterns to match are commented out for the sake of my own personal environments being on the latest version of pi-hole and the commented out queries don’t particularly apply to the latest version.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># HELK pihole dns conf file</span>
+<span class="c"># HELK build Stage: Alpha</span>
+<span class="c"># Author: Colin Rubbert (@colinrubbert)</span>
+<span class="c"># License: GPL-3.0</span>
+
+input <span class="o">{</span>
+  beats <span class="o">{</span>
+    port <span class="o">=&gt;</span> 5044
+  <span class="o">}</span>
+<span class="o">}</span>
+
+filter <span class="o">{</span>
+
+  <span class="k">if</span> <span class="s2">"pihole"</span> <span class="k">in</span> <span class="o">[</span>tags] <span class="o">{</span>
+    grok <span class="o">{</span>
+      patterns_dir <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"</span><span class="k">${</span><span class="nv">LS_HOME</span><span class="k">}</span><span class="s2">/pipeline/patterns"</span><span class="o">]</span>
+      match <span class="o">=&gt;</span> <span class="o">{</span>
+        <span class="s2">"message"</span> <span class="o">=&gt;</span> <span class="o">[</span>
+
+          <span class="c"># request - query type</span>
+          <span class="s2">"^%{DNSMASQPREFIX} query</span><span class="se">\[</span><span class="s2">%{DATA:query_type}</span><span class="se">\]</span><span class="s2"> %{FQDN:domain_request} from %{IP:request_from}$"</span>,
+
+          <span class="c"># reponse domain to ip</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is %{IP:ip_response}$"</span>,
+
+          <span class="c"># response domain is NXDOMAIN</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is NXDOMAIN$"</span>,
+
+          <span class="c"># response config domain is NXDOMAIN</span>
+          <span class="c"># "^%{DNSMASQPREFIX} config %{FQDN:domain_request} is NXDOMAIN$",</span>
+
+          <span class="c"># response config domain is no - DATA</span>
+          <span class="c"># "^%{DNSMASQPREFIX} config %{FQDN:domain_request} is NODATA-IPv[4,6]$",</span>
+
+          <span class="c"># reponse domain to ip cname</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is </span><span class="se">\&lt;</span><span class="s2">CNAME</span><span class="se">\&gt;</span><span class="s2">$"</span>,
+
+          <span class="c"># respone ip to domain</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply %{IP:ip_request} is %{FQDN:domain_response}$"</span>,
+
+          <span class="c"># piholed</span>
+          <span class="c"># "^%{DNSMASQPREFIX} \/etc\/pihole\/gravity\.list %{FQDN:blocked_domain} is %{IP:pihole}$",</span>
+
+          <span class="c"># piholed 5.0</span>
+          <span class="s2">"^%{DNSMASQPREFIX} gravity blocked %{FQDN:blocked_domain} is %{IP:pihole}$"</span>,
+
+          <span class="c"># piholed local</span>
+          <span class="c"># "^%{DNSMASQPREFIX} \/etc\/pihole\/local\.list %{FQDN:blocked_domain} is %{IP:pihole}$",</span>
+
+          <span class="c"># piholed CNAME inspection</span>
+          <span class="c"># "^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is blocked during CNAME inspection",</span>
+
+          <span class="c"># blacklist</span>
+          <span class="c"># "^%{DNSMASQPREFIX} \/etc\/pihole\/black\.list %{FQDN:blocked_domain} is %{IP:pihole}$",</span>
+
+          <span class="c"># regex</span>
+          <span class="c"># "^%{DNSMASQPREFIX} \/etc\/pihole\/regex\.list %{FQDN:blocked_domain} is %{IP:pihole}$",</span>
+
+          <span class="c"># reverse response etc hosts ip to domain</span>
+          <span class="c"># "^%{DNSMASQPREFIX} \/etc\/hosts %{IP:ip_request} is %{FQDN:domain_response}$",</span>
+
+          <span class="c"># reverse response etc hosts domain to ip</span>
+          <span class="c"># "^%{DNSMASQPREFIX} \/etc\/hosts %{FQDN:domain_request} is %{IP:ip_response}$",</span>
+
+          <span class="c"># forward dns to</span>
+          <span class="s2">"^%{DNSMASQPREFIX} forwarded %{FQDN:domain_request_forward} to %{IP:dns_forward_to}$"</span>,
+
+          <span class="c"># cached domain to ip</span>
+          <span class="s2">"^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is %{IP:ip_response}$"</span>,
+
+          <span class="c"># cached ip to domain</span>
+          <span class="c"># "^%{DNSMASQPREFIX} cached %{IP:ip_request} is %{FQDN:domain_response}$",</span>
+
+          <span class="c"># cached is srv</span>
+          <span class="c"># "^%{DNSMASQPREFIX} cached %{SRV} is \&lt;SRV\&gt;$",</span>
+
+          <span class="c"># response is srv</span>
+          <span class="c"># "^%{DNSMASQPREFIX} reply %{SRV} is \&lt;SRV\&gt;$",</span>
+
+          <span class="c"># cached domain to ip cname</span>
+          <span class="s2">"^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is </span><span class="se">\&lt;</span><span class="s2">CNAME</span><span class="se">\&gt;</span><span class="s2">$"</span>,
+
+          <span class="c"># cached domain is NXDOMAIN</span>
+          <span class="s2">"^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is NXDOMAIN$"</span>,
+
+          <span class="c"># cached domain is no - DATA</span>
+          <span class="s2">"^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is NODATA-IPv[4,6]$"</span>,
+
+          <span class="c"># cached domain is no - DATA</span>
+          <span class="s2">"^%{DNSMASQPREFIX} cached %{FQDN:domain_request} is NODATA$"</span>,
+
+          <span class="c"># domain is no - DATA</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is NODATA-IPv[4,6]$"</span>,
+
+          <span class="c"># domain is no - DATA</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply %{FQDN:domain_request} is NODATA$"</span>,
+
+          <span class="c"># exactly blacklisted</span>
+          <span class="s2">"^%{DNSMASQPREFIX} exactly blacklisted %{FQDN:blocked_domain} is %{IP:pihole}$"</span>,
+
+          <span class="c"># regex blacklisted</span>
+          <span class="s2">"^%{DNSMASQPREFIX} regex blacklisted %{FQDN:blocked_domain} is %{IP:pihole}$"</span>,
+
+          <span class="c"># PTR - delete ?</span>
+          <span class="c"># "^%{DNSMASQPREFIX} query\[%{WORD:query_type}\] %{HOSTNAMEPTR:request} from %{IP:request_from}$",</span>
+
+          <span class="c"># PTR forwarded - delete ?</span>
+          <span class="c"># "^%{DNSMASQPREFIX} forwarded %{HOSTNAMEPTR:request} to %{IP:dns_forward_to}$",</span>
+
+          <span class="c"># clients sending url instead of domain</span>
+          <span class="c"># "^%{DNSMASQPREFIX} (query\[.*\]|config|forwarded|reply|cached) %{URI:URI}.*$",</span>
+
+          <span class="c"># SERVFAIL</span>
+          <span class="s2">"^%{DNSMASQPREFIX} reply error is SERVFAIL"</span>
+
+        <span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c"># to do cached and cached reverse</span>
+
+    <span class="k">if</span> <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"cached"</span>
+    and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"NXDOMAIN"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"cached NXDOMAIN"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>NODATA] <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"NODATA"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else if</span> <span class="o">[</span>request_from] and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"query"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"request and query type"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>ip_response] and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"reply"</span> <span class="o">{</span>
+      geoip <span class="o">{</span>
+        <span class="nb">source</span> <span class="o">=&gt;</span> <span class="s2">"ip_response"</span>
+      <span class="o">}</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"response domain to ip"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"CNAME"</span>
+    and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"reply"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"response domain to ip CNAME"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>domain_response] and <span class="o">[</span>message] <span class="o">=</span>~<span class="s2">"reply"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"response ip to domain"</span><span class="o">]</span>
+      <span class="o">}</span>
+      geoip <span class="o">{</span>
+        <span class="nb">source</span> <span class="o">=&gt;</span> <span class="s2">"ip_request"</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>blocked_domain] <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"piholed"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else if</span> <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"</span><span class="se">\/</span><span class="s2">etc</span><span class="se">\/</span><span class="s2">hosts"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"reverse hostsfile"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else if</span> <span class="o">[</span>dns_forward_to] <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"dns forward"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">else if</span> <span class="o">[</span>ip_request] and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"cached"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"cached ip to domain"</span><span class="o">]</span>
+      <span class="o">}</span>
+      geoip <span class="o">{</span>
+        <span class="nb">source</span> <span class="o">=&gt;</span> <span class="s2">"ip_request"</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>domain_request] and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"cached"</span>
+    and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"CNAME"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"cached domain to ip cname"</span><span class="o">]</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">else if</span> <span class="o">[</span>domain_request] and <span class="o">[</span>message] <span class="o">=</span>~ <span class="s2">"cached"</span> <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_tag <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"cached domain to ip"</span><span class="o">]</span>
+      <span class="o">}</span>
+      geoip <span class="o">{</span>
+        <span class="nb">source</span> <span class="o">=&gt;</span> <span class="s2">"ip_response"</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span> <span class="o">[</span>domain_request] <span class="o">{</span>
+      geoip <span class="o">{</span>
+        <span class="c"># cache_size =&gt; "10000"</span>
+        <span class="nb">source</span> <span class="o">=&gt;</span> <span class="s2">"domain_request"</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span> <span class="o">[</span>ip_response] <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_field <span class="o">=&gt;</span> <span class="o">{</span>
+          <span class="s2">"ip_or_domain_response"</span> <span class="o">=&gt;</span> <span class="s2">"%{domain_request}"</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span> <span class="o">[</span>domain_response] <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_field <span class="o">=&gt;</span> <span class="o">{</span>
+          <span class="s2">"ip_or_domain_response"</span> <span class="o">=&gt;</span> <span class="s2">"%{domain_response}"</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span> <span class="o">[</span>blocked_domain] <span class="o">{</span>
+      mutate <span class="o">{</span>
+        add_field <span class="o">=&gt;</span> <span class="o">{</span>
+          <span class="s2">"ip_or_domain_response"</span> <span class="o">=&gt;</span> <span class="s2">"%{blocked_domain}"</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    mutate <span class="o">{</span>
+      add_field <span class="o">=&gt;</span> <span class="o">{</span>
+        <span class="s2">"[source_fqdn]"</span> <span class="o">=&gt;</span> <span class="s2">"%{source_host}"</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+
+    mutate <span class="o">{</span>
+      remove_field <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"port"</span><span class="o">]</span>
+    <span class="o">}</span>
+
+    dns <span class="o">{</span>
+      nameserver <span class="o">=&gt;</span> <span class="s2">"localhost"</span>
+      reverse <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"source_fqdn"</span><span class="o">]</span>
+      action <span class="o">=&gt;</span> <span class="s2">"replace"</span>
+      hit_cache_size <span class="o">=&gt;</span> 10000
+      hit_cache_ttl <span class="o">=&gt;</span> 900
+      failed_cache_size <span class="o">=&gt;</span> 512
+      failed_cache_ttl <span class="o">=&gt;</span> 900
+    <span class="o">}</span>
+
+    <span class="nb">date</span> <span class="o">{</span>
+      match <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"date"</span>, <span class="s2">"MMM  d HH:mm:ss"</span>, <span class="s2">"MMM dd HH:mm:ss"</span><span class="o">]</span>
+      timezone <span class="o">=&gt;</span> <span class="s2">"America/Chicago"</span>
+    <span class="o">}</span>
+
+  <span class="o">}</span>
+
+  <span class="k">if</span> <span class="s2">"%"</span> <span class="k">in</span> <span class="o">[</span>source_host] <span class="o">{</span>
+    mutate <span class="o">{</span>
+      gsub <span class="o">=&gt;</span> <span class="o">[</span>
+        <span class="s2">"source_host"</span>, <span class="s2">"%.*$"</span>, <span class="s2">""</span>
+      <span class="o">]</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+
+output <span class="o">{</span>
+<span class="c"># stdout { codec =&gt; rubydebug }</span>
+  <span class="k">if</span> <span class="s2">"pihole"</span> <span class="k">in</span> <span class="o">[</span>tags]<span class="o">{</span>
+    elasticsearch <span class="o">{</span>
+      hosts <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">"helk-elasticsearch:9200"</span><span class="o">]</span>
+      manage_template <span class="o">=&gt;</span> <span class="nb">true
+      </span>index <span class="o">=&gt;</span> <span class="s2">"logs-dns-pihole-%{+YYYY.MM.dd}"</span>
+      user <span class="o">=&gt;</span> <span class="s1">'elastic'</span>
+      <span class="c">#password =&gt; 'elasticpassword'</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Our configuration file is now done but before we restart our helk-logstash instance we need to create a custom pattern since our configuration file uses custom variables for the filtering process.</p>
+
+<h3 id="creating-a-custom-pattern-for-our-dns-pihole-configuration">Creating a custom pattern for our dns-pihole configuration</h3>
+
+<p>HELK out of the box doesn’t have a spot for you to place your custom configurations but since we know that the <code class="language-plaintext highlighter-rouge">pipeline</code> directory will be reflected at build time of our docker container we can make a custom folder within our pipeline directory for our custom patterns.</p>
+
+<p>To create our custom folder in our pipeline file we will need to make a new folder. We should already be in our <code class="language-plaintext highlighter-rouge">HELK/docker/helk-logstash/pipeline</code> folder.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># From the HELK/docker/helk-logstash/pipeline directory</span>
+<span class="nb">mkdir </span>patterns
+</code></pre></div></div>
+
+<p>Moving to our new directory we will need to make our file for our custom pattern and we will name it <code class="language-plaintext highlighter-rouge">dns-pihole</code> to do this we will run the following command.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># From the HELK/docker/helk-logstash/pipeline/patterns directory</span>
+<span class="nb">touch </span>dns-pihole
+</code></pre></div></div>
+
+<p>Next we will want to edit our <code class="language-plaintext highlighter-rouge">dns-pihole</code> file with our custom pattern. Edit the file and add the following custom variable patterns.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># dns-pihole pattern</span>
+HOSTNAMEPTR <span class="se">\b</span><span class="o">(</span>?:[<span class="se">\.</span>_0-9A-Za-z][0-9A-Za-z-]<span class="o">{</span>0,62<span class="o">})(</span>?:<span class="se">\.</span><span class="o">(</span>?:[<span class="se">\.</span>_0-9A-Za-z][0-9A-Za-z-]<span class="o">{</span>0,62<span class="o">}))</span><span class="k">*</span><span class="o">(</span><span class="se">\.</span>?|<span class="se">\b</span><span class="o">)</span>
+NODATA NODATA-[[:word:]]+
+SRV _+.+<span class="se">\S</span>
+FQDN <span class="se">\b</span><span class="o">(</span>?:[<span class="se">\w</span>-][<span class="se">\w</span>-]<span class="o">{</span>0,62<span class="o">})(</span>?:<span class="se">\.</span><span class="o">(</span>?:[<span class="se">\w</span>-][<span class="se">\w</span>-]<span class="o">{</span>0,62<span class="o">}))</span><span class="k">*</span><span class="o">(</span><span class="se">\.</span>?|<span class="se">\b</span><span class="o">)</span>
+DNSMASQPREFIX %<span class="o">{</span>SYSLOGTIMESTAMP:date<span class="o">}</span> %<span class="o">{</span>SYSLOGPROG<span class="o">}</span>: %<span class="o">{</span>INT:logrow<span class="o">}</span> %<span class="o">{</span>IP:source_host<span class="o">}</span><span class="se">\/</span>%<span class="o">{</span>POSINT:source_port<span class="o">}</span>
+URI %<span class="o">{</span>URIPROTO<span class="o">}</span>:<span class="o">(</span>//<span class="o">)</span>?<span class="o">(</span>?:%<span class="o">{</span>URIHOST<span class="o">})</span>?<span class="o">(</span>?:%<span class="o">{</span>URIPATH<span class="o">})</span>?
+</code></pre></div></div>
+
+<p>Now we will have to restart our helk-logstash container to rebuild our custom pi-hole configuration.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Restart helk-logstash docker container</span>
+<span class="nb">sudo </span>docker restart helk-logstash
+</code></pre></div></div>
+
+<p>Now if everything is working we should be ingesting our Pi-hole logs into our HELK Logstash endpoint.</p>
+
+<p>We should now see an options for <code class="language-plaintext highlighter-rouge">logs-dns-pihole*</code> index pattern in our HELK Kibana instance.</p>
+
+<p><img src="/assets/images/post-images/pi-hole-logs-in-the-helk-stack/pi_hole_1.png" alt="Kibana discovery Pi-hole change index pattern" /></p>
+
+<p>If it’s not there you may have to go into your <strong><em>management</em></strong> page and look and see if it’s present in your Kibana <strong><em>index patterns</em></strong>, if it’s not in your <strong><em>index patterns</em></strong> check and see if there are any logs that are indicating that there is an error anywhere.</p>
+
+<p><img src="/assets/images/post-images/pi-hole-logs-in-the-helk-stack/pi_hole_2.png" alt="Kibana index management index patterns" /></p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>The HELK project is a fantastic out of the box logging infrastructure and extending the ingestion and collection of your data and providing new data sources with custom patterns is fairly easy once you know how to do it.</p>
+
+<p>As with any project, your mileage may vary, but the resources for the ELK stack as well as the HELK Github repository are valuable resources to troubleshoot any issues.</p>
+
+<p>This article focuses on the pi-hole, however, applying these steps could be easily be applied to other custom data points for extending your logs.</p>
+
+  </div>
+</div>
+      <section id="contact" class="container">
+  <div class="section-header-wrapper">
+    <h1>Contact us today</h1>
+    <p>Find out how we can be your solution for your technology needs.</p>
+  </div>
+    <form method="post" action="/">
+      <input name="Email" type="email" placeholder="Enter in your email">
+      <input type="hidden" name="_to" value="colinrubbert@gmail.com">
+      <input type="text" name="_subject" style="display: none;" value="fivethirtyfour - notification">
+      <input type="text" name="_gotcha" style="display: none;">
+      <input class="button button-primary" type="submit" value="Notify Me">
+    </form>
+
+</section>
+      <footer class="container">
+  <div class="brand-wrapper">
+    <svg class="brand-inverted"width="36" height="32" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="8" rx="1" fill="#FCEFC7"/>
+      <rect x="36" y="32" width="24" height="8" rx="1" transform="rotate(-180 36 32)" fill="#FCEFC7"/>
+      <rect y="12" width="16" height="8" rx="1" fill="#CFBCF2"/>
+      <rect x="36" y="20" width="16" height="8" rx="1" transform="rotate(-180 36 20)" fill="#CFBCF2"/>
+      <rect y="24" width="8" height="8" rx="1" fill="#FCEFC7"/>
+      <rect x="36" y="8" width="8" height="8" rx="1" transform="rotate(-180 36 8)" fill="#FCEFC7"/>
+    </svg>
+    <h2 class="brand">five<b>thirty</b>four</h2>
+  </div>
+</footer>
+<!-- Matomo -->
+<script type="text/javascript">
+  var _paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//stats.fivethirtyfour.com/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '1']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+  </body>
