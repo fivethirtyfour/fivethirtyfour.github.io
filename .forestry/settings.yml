@@ -16,7 +16,7 @@ sections:
   label: Website Directory
 - type: directory
   path: ''
-  label: Everything
+  label: Files
   create: all
   match: "**/*"
 - type: heading
