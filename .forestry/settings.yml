@@ -12,6 +12,11 @@ sections:
 - type: jekyll-pages
   label: Pages
   create: all
+- type: directory
+  path: assets/images
+  label: Images
+  create: all
+  match: "**/*"
 - type: heading
   label: Website Directory
 - type: directory
