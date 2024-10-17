@@ -6,13 +6,10 @@ description: "IT services for all."
 baseurl: "/"
 url: "https://fivethirtyfour.com"
 
-permalink: date # how your URLs are built, see https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
+permalink: pretty # how your URLs are built, see https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
 
 # Build settings
-sass:
-  style: :nested
 markdown: kramdown
-permalink: pretty
 
 paginate: 10
 paginate_path: "/articles/page:num/"
